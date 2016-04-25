@@ -1,0 +1,40 @@
+@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    var siteControl = Model.Element("CSiteControl");
+    IEnumerable<ICMSElement> learnSub = Model.Elements("Learnhowtofunditsub");
+    <div class="main-copy">
+        @{
+            // If title placement was set to "Full" it will have already been rendered.
+            String titlePlacement = siteControl != null ? siteControl.GetElementValue("TitlePlacement") : "Main";
+            if (!titlePlacement.Equals("Full")) {
+                Html.RenderPartial("Editable/MainCopyTitle", Model.Element("MainCopyTitle"));
+            }
+        }
+        <div class="row">
+            <div class="col-sm-12">
+                @{
+                    Html.RenderPartial("Editable/MainCopySubtitle", Model.Element("MainCopySubtitle"));
+                    if (Model.Element("FreeBrochureCheck1").Value == "true")
+                    {
+                        Html.RenderPartial("Other/eBrochure", Model);
+                    }
+                    Html.RenderPartial("Editable/MainCopyBody", Model.Element("MainCopyBody"));
+                    Html.RenderPartial("Other/eBrochureForm", Model); 
+                }
+            </div>
+        </div>
+    </div>
+    @Html.Partial("Other/VideoWrapper")
+
+@* ---------------------- Calculator -------------------- *@
+    if (Model.Element("GiftIllustratorComponent") != null)
+    {
+    <div class="row stl-gift-illustrator-row">
+        <div class="col-sm-12">
+            @Html.Partial("Other/GiftIllustrator", Model.Element("GiftIllustratorComponent"));
+        </div>
+    </div>
+    }
+    @Html.Partial("Other/NextStepsWrapper")
+}

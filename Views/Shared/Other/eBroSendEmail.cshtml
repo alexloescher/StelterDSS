@@ -1,0 +1,30 @@
+﻿@{
+    var fname = Request["first"];
+    var lname = Request["last"]; 
+    var email = Request["email"];
+    var toEmail = Request["toEmail"];
+    var errorMessage = "";
+    var nextpage = Request["nextpage"];
+    var mailBody = "Hi," + "/n" + "A request has been submitted recently to view the eBrochure by, /n";
+    mailBody = mailBody + "First name : " + fname + "/n";
+    mailBody = mailBody + "Last name : " + lname + "/n";
+    mailBody = mailBody + "Email Address : " + email + "/n";
+    try {
+        // Initialize WebMail helper
+        WebMail.SmtpServer = "localhost";
+        WebMail.SmtpPort = 25;
+        WebMail.UserName = "NA";
+        WebMail.Password = "NA";
+        WebMail.From = "test@test.com";
+
+        // Send email
+        WebMail.Send(to: toEmail,
+            subject: "Request for eBrochure from - " + fname + " " + lname,
+            body: mailBody
+        );
+        Response.Redirect(nextpage);
+    }
+    catch (Exception ex ) {
+        errorMessage = ex.Message;
+    }
+}

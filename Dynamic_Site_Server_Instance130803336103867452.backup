@@ -1,0 +1,568 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{FB9E3192-9777-4BDB-B950-62F1AC638490}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <MvcBuildViews>true</MvcBuildViews>
+    <RootNamespace>Ingeniux.Runtime</RootNamespace>
+    <AssemblyName>Dynamic_Site_Server</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">.\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.Linq" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.IO.Abstractions">
+      <HintPath>bin\System.IO.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Antlr3.Runtime, Version=3.5.0.2, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>packages\Antlr.3.5.0.2\lib\Antlr3.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="AuthenticatorPlugin">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\AuthenticatorPlugin.dll</HintPath>
+    </Reference>
+    <Reference Include="crypto">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\crypto.dll</HintPath>
+    </Reference>
+    <Reference Include="dotless.Core, Version=1.4.4.0, Culture=neutral, PublicKeyToken=96b446c9e63eae34, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\build\windows\packages\dotless.1.4.4\lib\dotless.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="DynamicExecuteHelper">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\DynamicExecuteHelper.dll</HintPath>
+    </Reference>
+    <Reference Include="DynamicExecuteImplementations, Version=9.0.158.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\DynamicExecuteImplementations.dll</HintPath>
+    </Reference>
+    <Reference Include="DynamicRenderingEngine">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\DynamicRenderingEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="FiftyOne.Foundation">
+      <HintPath>bin\FiftyOne.Foundation.dll</HintPath>
+    </Reference>
+    <Reference Include="filtdump">
+      <HintPath>..\IGXCMSRTAPI\IndexingSearch\binary\filtdump.exe</HintPath>
+    </Reference>
+    <Reference Include="FilterWrapper, Version=1.0.0.0, Culture=neutral, PublicKeyToken=3bf3f480b229fbcf, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\IGXCMSRTAPI\IndexingSearch\binary\FilterWrapper.dll</HintPath>
+    </Reference>
+    <Reference Include="HtmlAgilityPack">
+      <HintPath>bin\HtmlAgilityPack.dll</HintPath>
+    </Reference>
+    <Reference Include="IGXRuntimeAPI">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\IGXRuntimeAPI.dll</HintPath>
+    </Reference>
+    <Reference Include="Ingeniux.CMS.Common">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Ingeniux.CMS.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Ingeniux.CMS.CSAPI">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Ingeniux.CMS.CSAPI.dll</HintPath>
+    </Reference>
+    <Reference Include="Ingeniux.CMS.Models">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Ingeniux.CMS.Models.dll</HintPath>
+    </Reference>
+    <Reference Include="Ingeniux.Search">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Ingeniux.Search.dll</HintPath>
+    </Reference>
+    <Reference Include="Ingeniux.Support">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Ingeniux.Support.dll</HintPath>
+    </Reference>
+    <Reference Include="Lucene.Net">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Lucene.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="Lucene.Net.Contrib.Analyzers">
+      <HintPath>bin\Lucene.Net.Contrib.Analyzers.dll</HintPath>
+    </Reference>
+    <Reference Include="Lucene.Net.Contrib.Core">
+      <HintPath>bin\Lucene.Net.Contrib.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Lucene.Net.Contrib.FastVectorHighlighter">
+      <HintPath>bin\Lucene.Net.Contrib.FastVectorHighlighter.dll</HintPath>
+    </Reference>
+    <Reference Include="Lucene.Net.Contrib.Highlighter">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Lucene.Net.Contrib.Highlighter.dll</HintPath>
+    </Reference>
+    <Reference Include="Lucene.Net.Contrib.Memory">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Lucene.Net.Contrib.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="Lucene.Net.Contrib.Queries">
+      <HintPath>bin\Lucene.Net.Contrib.Queries.dll</HintPath>
+    </Reference>
+    <Reference Include="Lucene.Net.Contrib.Regex">
+      <HintPath>bin\Lucene.Net.Contrib.Regex.dll</HintPath>
+    </Reference>
+    <Reference Include="Lucene.Net.Contrib.SimpleFacetedSearch">
+      <HintPath>bin\Lucene.Net.Contrib.SimpleFacetedSearch.dll</HintPath>
+    </Reference>
+    <Reference Include="Lucene.Net.Contrib.Snowball">
+      <HintPath>bin\Lucene.Net.Contrib.Snowball.dll</HintPath>
+    </Reference>
+    <Reference Include="Lucene.Net.Contrib.SpellChecker">
+      <HintPath>bin\Lucene.Net.Contrib.SpellChecker.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.SignalR.Core">
+      <HintPath>packages\Microsoft.AspNet.SignalR.Core.2.2.0\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CompilerServices.AsyncTargetingPack.Net4">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Microsoft.CompilerServices.AsyncTargetingPack.Net4.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Owin, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>packages\Microsoft.Owin.3.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>packages\Microsoft.Owin.Host.SystemWeb.3.0.1\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>packages\Microsoft.Owin.Security.3.0.1\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Web.Infrastructure">
+      <Private>True</Private>
+      <HintPath>bin\Microsoft.Web.Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="MoreLinq">
+      <HintPath>bin\MoreLinq.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\NLog.dll</HintPath>
+    </Reference>
+    <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Raven.Abstractions">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Raven.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Raven.Client.Embedded">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Raven.Client.Embedded.dll</HintPath>
+    </Reference>
+    <Reference Include="Raven.Client.Lightweight">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Raven.Client.Lightweight.dll</HintPath>
+    </Reference>
+    <Reference Include="ShoQuan">
+      <HintPath>bin\ShoQuan.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Core, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>packages\Rx-Core.2.2.5\lib\net45\System.Reactive.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Interfaces, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>packages\Rx-Interfaces.2.2.5\lib\net45\System.Reactive.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.Helpers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Http.WebHost, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>packages\Microsoft.AspNet.WebApi.WebHost.5.2.3\lib\net45\System.Web.Http.WebHost.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Mvc, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>packages\Microsoft.AspNet.Mvc.5.2.3\lib\net45\System.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Optimization, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>packages\Microsoft.AspNet.Web.Optimization.1.1.3\lib\net40\System.Web.Optimization.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>packages\Microsoft.AspNet.Razor.3.2.3\lib\net45\System.Web.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="WebGrease, Version=1.6.5135.21930, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>packages\WebGrease.1.6.0\lib\WebGrease.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Action\setSession.aspx" />
+    <Content Include="bootstrap3\css\bootstrap-theme.css" />
+    <Content Include="bootstrap3\css\bootstrap-theme.min.css" />
+    <Content Include="bootstrap3\css\bootstrap.css" />
+    <Content Include="bootstrap3\css\bootstrap.min.css" />
+    <Content Include="App_Data\IGX.mobi.dat" />
+    <Content Include="Action\eBroEmailBody.cshtml" />
+    <Content Include="Action\eBroPage.cshtml" />
+    <Content Include="Action\eBroSendEmail - Copy.cshtml" />
+    <Content Include="Action\PEPCEmailBody.cshtml" />
+    <Content Include="Action\PEPCSendEmail.cshtml" />
+    <Content Include="Action\processForm.cshtml" />
+    <Content Include="Action\processFormEmailBody.cshtml" />
+    <Content Include="Action\sendPageContent.cshtml" />
+    <Content Include="Action\eBroSendEmail.cshtml" />
+    <None Include="bootstrap3\css\PageBuilder.less" />
+    <None Include="bootstrap3\css\PageBuilderCustom.less" />
+    <Content Include="bootstrap3\fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="bootstrap3\js\bootstrap.js" />
+    <Content Include="bootstrap3\js\bootstrap.min.js" />
+    <Content Include="Content\bg-body.png" />
+    <Content Include="Content\getPlainXmlPreview.xsl" />
+    <Content Include="Content\getXmlPreview.xsl" />
+    <Content Include="Content\getXmlPreviewFull.xsl" />
+    <Content Include="Content\include-xmlView.xsl" />
+    <Content Include="Global.asax" />
+    <Content Include="App_Code\_Functions.cshtml" />
+    <Content Include="App_Code\_Helpers.cshtml" />
+    <Content Include="bootstrap3\fonts\glyphicons-halflings-regular.eot" />
+    <Content Include="bootstrap3\fonts\glyphicons-halflings-regular.ttf" />
+    <Content Include="bootstrap3\fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="Models\StelterForms.dbml">
+      <SubType>Designer</SubType>
+      <Generator>MSLinqToSQLGenerator</Generator>
+      <LastGenOutput>StelterForms.designer.cs</LastGenOutput>
+    </Content>
+    <Content Include="Resources\play.png" />
+    <Content Include="packages.config" />
+    <Content Include="Scripts\modernizr-2.8.3.js" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Action\setSession.aspx.cs">
+      <DependentUpon>setSession.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="App_Start\BundleConfig.cs" />
+    <Compile Include="App_Start\FilterConfig.cs" />
+    <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Controllers\AssetAsyncController.cs" />
+    <Compile Include="Controllers\AssetController.cs" />
+    <Compile Include="Controllers\AuthenticationController.cs" />
+    <Compile Include="Controllers\CMSPageDefaultController.cs" />
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Models\FormInfoWrapper.cs" />
+    <Compile Include="Models\MIMEAssistant.cs" />
+    <Compile Include="Models\CMSRoute.cs" />
+    <Compile Include="Models\IGXRuntimeCache.cs" />
+    <Compile Include="Models\StelterForms.designer.cs">
+      <DependentUpon>StelterForms.dbml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\web.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Views\_ViewStart.cshtml" />
+    <Content Include="Search.config" />
+    <Content Include="Views\Shared\Components\ALT_NavigationComponent.cshtml" />
+    <Content Include="Views\Shared\Components\BannerComponent.cshtml" />
+    <Content Include="Views\Shared\Components\ContactComponent.cshtml" />
+    <Content Include="Views\Shared\Components\CustomJourneyComponent.cshtml" />
+    <Content Include="Views\Shared\Components\FlyOverComponent.cshtml" />
+    <Content Include="Views\Shared\Components\FormJQuery.cshtml" />
+    <Content Include="Views\Shared\Components\FreeFormXHTMLComponent.cshtml" />
+    <Content Include="Views\Shared\Components\JourneyComponent.cshtml" />
+    <Content Include="Views\Shared\Components\JourneyComponent_Style2.cshtml" />
+    <Content Include="Views\Shared\Components\JourneyComponent_Style3.cshtml" />
+    <Content Include="Views\Shared\Components\ManualListingComponent.cshtml" />
+    <Content Include="Views\Shared\Components\NavigationComponent.cshtml" />
+    <Content Include="Views\Shared\Components\NextStepsTriggerComponent.cshtml" />
+    <Content Include="Views\Shared\Components\WhatsnewComponent.cshtml" />
+    <Content Include="Views\Shared\Custom\AdditionalBodyHTML.cshtml" />
+    <Content Include="Views\Shared\Custom\AdditionalHeadHTML.cshtml" />
+    <Content Include="Views\Shared\Custom\BannerComponent.cshtml" />
+    <Content Include="Views\Shared\Custom\Base.cshtml" />
+    <Content Include="Views\Shared\Custom\Breadcrumb.cshtml" />
+    <Content Include="Views\Shared\Custom\ClientCSS.cshtml" />
+    <Content Include="Views\Shared\Custom\ClientJS.cshtml" />
+    <Content Include="Views\Shared\Custom\ContactComponent.cshtml" />
+    <Content Include="Views\Shared\Custom\EbrochureContactComponent.cshtml" />
+    <Content Include="Views\Shared\Custom\GILibs.cshtml" />
+    <Content Include="Views\Shared\Custom\HomeJourneyCode.cshtml" />
+    <Content Include="Views\Shared\Custom\JourneyPaths.cshtml" />
+    <Content Include="Views\Shared\Custom\jQuery.cshtml" />
+    <Content Include="Views\Shared\Custom\MagnificCSS.cshtml" />
+    <Content Include="Views\Shared\Custom\MagnificJS.cshtml" />
+    <Content Include="Views\Shared\Custom\MiddleResults.cshtml" />
+    <Content Include="Views\Shared\Custom\OrgIdJs.cshtml" />
+    <Content Include="Views\Shared\Custom\SCodeJS.cshtml" />
+    <Content Include="Views\Shared\Custom\SiteCatalystCode.cshtml" />
+    <Content Include="Views\Shared\Custom\TitleTag.cshtml" />
+    <Content Include="Views\Shared\Disclaimer.cshtml" />
+    <Content Include="Views\Shared\Editable\CaseStudyBody.cshtml" />
+    <Content Include="Views\Shared\Editable\CaseStudyTitle.cshtml" />
+    <Content Include="Views\Shared\Editable\ClientMissionBody.cshtml" />
+    <Content Include="Views\Shared\Editable\ClientMissionTitle.cshtml" />
+    <Content Include="Views\Shared\Editable\FormJQuery.cshtml" />
+    <Content Include="Views\Shared\Editable\FullTitle.cshtml" />
+    <Content Include="Views\Shared\Editable\H3.cshtml" />
+    <Content Include="Views\Shared\Editable\ImageField.cshtml" />
+    <Content Include="Views\Shared\Editable\JourneyAbstract.cshtml" />
+    <Content Include="Views\Shared\Editable\MainContentHTML.cshtml" />
+    <Content Include="Views\Shared\Editable\MainCopyBody.cshtml" />
+    <Content Include="Views\Shared\Editable\MainCopySubtitle.cshtml" />
+    <Content Include="Views\Shared\Editable\MainCopyTitle.cshtml" />
+    <Content Include="Views\Shared\Editable\PageImage.cshtml" />
+    <Content Include="Views\Shared\Editable\PathImage.cshtml" />
+    <Content Include="Views\Shared\Editable\SubTitle.cshtml" />
+    <Content Include="Views\Shared\Editable\TextField.cshtml" />
+    <Content Include="Views\Shared\Editable\Title.cshtml" />
+    <Content Include="Views\Shared\Editable\XHTMLField.cshtml" />
+    <Content Include="Views\Shared\Editable\_DefaultText.cshtml" />
+    <Content Include="Views\Shared\FeatureItem.cshtml" />
+    <Content Include="Views\Shared\NonBootstrap\CustomCSSOptions.cshtml" />
+    <Content Include="Views\Shared\NonBootstrap\HomeSubMiddleSection.cshtml" />
+    <Content Include="Views\Shared\NonBootstrap\JourneyComponent.cshtml" />
+    <Content Include="Views\Shared\NonBootstrap\JourneyComponentAccordion.cshtml" />
+    <Content Include="Views\Shared\NonBootstrap\JourneyComponentWrapper.cshtml" />
+    <Content Include="Views\Shared\Other\ArticleSubMiddleSection.cshtml" />
+    <Content Include="Views\Shared\Other\Breadcrumb.cshtml" />
+    <Content Include="Views\Shared\Other\ContactUsSubMiddleSection.cshtml" />
+    <Content Include="Views\Shared\Other\Disclaimer.cshtml" />
+    <Content Include="Views\Shared\Other\eBrochure.cshtml" />
+    <Content Include="Views\Shared\Other\eBrochureForm.cshtml" />
+    <Content Include="Views\Shared\Other\eBrochureHTML.cshtml" />
+    <Content Include="Views\Shared\Other\eBroSendEmail.cshtml" />
+    <Content Include="Views\Shared\Other\FreeFormBanner.cshtml" />
+    <Content Include="Views\Shared\Other\GiftIllustrator.cshtml" />
+    <Content Include="Views\Shared\Other\HomeSubMiddleSection.cshtml" />
+    <Content Include="Views\Shared\Other\InteriorSubMiddleSection.cshtml" />
+    <Content Include="Views\Shared\Other\LearnHowToFund.cshtml" />
+    <Content Include="Views\Shared\Other\LinkElement.cshtml" />
+    <Content Include="Views\Shared\Other\LinkSetField.cshtml" />
+    <Content Include="Views\Shared\Other\MicroPageMiddleColumn.cshtml" />
+    <Content Include="Views\Shared\Other\MiddleResults.cshtml" />
+    <Content Include="Views\Shared\Other\NextSteps.cshtml" />
+    <Content Include="Views\Shared\Other\NextStepsWrapper.cshtml" />
+    <Content Include="Views\Shared\Other\PageLeftNav.cshtml" />
+    <Content Include="Views\Shared\Other\PageMiddleColumn.cshtml" />
+    <Content Include="Views\Shared\Other\PageRightNav.cshtml" />
+    <Content Include="Views\Shared\Other\PEPCForm.cshtml" />
+    <Content Include="Views\Shared\Other\PEPCPromo.cshtml" />
+    <Content Include="Views\Shared\Other\RotatorBanner.cshtml" />
+    <Content Include="Views\Shared\Other\SEO.cshtml" />
+    <Content Include="Views\Shared\Other\SessionInit.cshtml" />
+    <Content Include="Views\Shared\Other\Share.cshtml" />
+    <Content Include="Views\Shared\Other\SingleBanner.cshtml" />
+    <Content Include="Views\Shared\Other\SiteControlLeftNav.cshtml" />
+    <Content Include="Views\Shared\Other\SiteControlRightNav.cshtml" />
+    <Content Include="Views\Shared\Other\SocialHub.cshtml" />
+    <Content Include="Views\Shared\Other\TaxonomyNavigation.cshtml" />
+    <Content Include="Views\Shared\Other\ToolkitEbrLinks.cshtml" />
+    <Content Include="Views\Shared\Other\Video.cshtml" />
+    <Content Include="Views\Shared\Other\VideoWrapper.cshtml" />
+    <Content Include="Views\Shared\Other\Whatsnew.cshtml" />
+    <Content Include="Views\Shared\Other\WhatsnewListing.cshtml" />
+    <Content Include="Views\Shared\PageLayout\Footer.cshtml" />
+    <Content Include="Views\Shared\PageLayout\Header.cshtml" />
+    <Content Include="Views\Shared\PageLayout\Quicklinks.cshtml" />
+    <Content Include="Views\Shared\PageLayout\VerticalNavigation.cshtml" />
+    <Content Include="Views\Shared\PageLayout\_Layout.cshtml" />
+    <Content Include="Views\Shared\_BrochureLayout.cshtml" />
+    <Content Include="Views\Shared\_CustomLayout.cshtml" />
+    <Content Include="Views\Shared\_InnerLayout.cshtml" />
+    <Content Include="Views\Shared\_LandingLayout.cshtml" />
+    <Content Include="Views\Shared\_Layout.cshtml" />
+    <Content Include="Views\Shared\_MainLayout.cshtml" />
+    <Content Include="Views\Shared\_MicroLayout.cshtml" />
+    <Content Include="Views\Shared\_MicroMainLayout.cshtml" />
+    <Content Include="Views\Shared\_NavLessLayout.cshtml" />
+    <Content Include="Views\Shared\_NonBootstrapInnerLayout.cshtml" />
+    <Content Include="Views\Shared\_NonBootstrapLayout.cshtml" />
+    <Content Include="Views\Shared\_NonBootstrapMainLayout.cshtml" />
+    <Content Include="Views\CMSPageDefault\Article.cshtml" />
+    <Content Include="Views\CMSPageDefault\ContactUsPage.cshtml" />
+    <Content Include="Views\CMSPageDefault\CustomArticle.cshtml" />
+    <Content Include="Views\CMSPageDefault\CustomContactUsPage.cshtml" />
+    <Content Include="Views\CMSPageDefault\CustomeBrochurePage.cshtml" />
+    <Content Include="Views\CMSPageDefault\CustomHomePage.cshtml" />
+    <Content Include="Views\CMSPageDefault\CustomInteriorPage.cshtml" />
+    <Content Include="Views\CMSPageDefault\eBrochurePage.cshtml" />
+    <Content Include="Views\CMSPageDefault\ExternalLink.cshtml" />
+    <Content Include="Views\CMSPageDefault\FormsPage.cshtml" />
+    <Content Include="Views\CMSPageDefault\GettingStartedPage.cshtml" />
+    <Content Include="Views\CMSPageDefault\HomePage.cshtml" />
+    <Content Include="Views\CMSPageDefault\InteriorPage.cshtml" />
+    <Content Include="Views\CMSPageDefault\LandingPage.cshtml" />
+    <Content Include="Views\CMSPageDefault\MicroPage.cshtml" />
+    <Content Include="Views\CMSPageDefault\NewsPage.cshtml" />
+    <Content Include="Views\CMSPageDefault\ToolkitPage.cshtml" />
+    <None Include="Models\StelterForms.dbml.layout">
+      <DependentUpon>StelterForms.dbml</DependentUpon>
+    </None>
+    <None Include="Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </None>
+    <None Include="Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="fonts\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{3259AA49-8AA1-44D3-9025-A0B520596A8C}" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>50042</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:52394/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

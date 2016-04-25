@@ -1,0 +1,26 @@
+﻿@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{	
+    if (Model != null)
+    {
+        String type = (Model as CMSPageRequest).RootElementName;
+    <div class="row banner-row">
+        <div class="column-md-12 hidden-print hidden-sm visible-md visible-lg">
+            @{
+        if (type == "BannerComponent")
+        {
+            Html.RenderPartial("Other/SingleBanner", Model);
+        }
+        if (type == "BannerRotatorComponent")
+        {
+            Html.RenderPartial("Other/RotatorBanner", Model);
+        }
+        if (type == "BannerFreeFormXHTML")
+        {
+            Html.RenderPartial("Other/FreeFormBanner", Model);
+        }
+            }
+        </div>
+    </div>
+    }
+}

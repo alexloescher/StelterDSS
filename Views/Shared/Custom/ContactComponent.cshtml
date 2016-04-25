@@ -1,0 +1,86 @@
+﻿@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{
+    var contactComponent = Model;
+    if (contactComponent != null)
+	{
+        var contactName = contactComponent.GetElementValue("ContactName");
+        var contactTitle = contactComponent.GetElementValue("ContactPosition");
+        var contactPhoto = contactComponent.GetElementValue("ContactPhoto");
+        var contactPhone = contactComponent.GetElementValue("Phone");
+        var contactFax = contactComponent.GetElementValue("Fax");
+        var contactEmail = contactComponent.GetElementValue("Email");
+        var contactAddressLine1 = contactComponent.GetElementValue("AddressLine1");
+        var contactAddressLine2 = contactComponent.GetElementValue("AddressLine2");
+        var contactCity = contactComponent.GetElementValue("City");
+        var contactState = contactComponent.GetElementValue("State");
+        var contactZipCode = contactComponent.GetElementValue("ZipCode");
+        var contactWebsite = contactComponent.GetElementValue("Website");
+
+        string cityStateZip = contactCity != null && contactCity.Length > 0 ? contactCity + ", " : "";
+        cityStateZip += contactState != null && contactState.Length > 0 ? contactState + " " : "";
+        cityStateZip += contactZipCode != null && contactZipCode.Length > 0 ? contactZipCode : "";
+
+        <!-- Please note the inline styles below which should be removed and specified by the client CSS -->
+        <div>
+            <div>
+                <div class="stl_ContactInfo">
+                    @if (contactPhoto != null)
+                    {
+                        <span class="stl_ContactPhoto">
+                            @Html.Partial("Editable/ImageField", contactComponent.Element("ContactPhoto"))
+						</span>
+                    }
+                    @if (contactName != null && contactName.Length > 0)
+                    {
+                        <span class="stl_ContactName">@contactName</span>
+			            <br />
+                    }
+                    @if (contactTitle != null && contactTitle.Length > 0)
+                    {
+                        <span class="stl_ContactTitle">@contactTitle</span>
+			            <br />
+                    }
+                    @if (contactPhone != null && contactPhone.Length > 0)
+                    {
+                        <span class="stl_ContactPhone">Phone: @contactPhone</span>
+			            <br />
+                    }
+                    @if (contactFax != null && contactFax.Length > 0)
+                    {
+                        <span class="stl_ContactFax">Fax: @contactFax</span>
+			            <br />
+                    }
+                    @if (contactEmail != null && contactEmail.Length > 0)
+                    {
+                        <span class="stl_ContactEmail">E-mail: </span><a href="mailto:@contactEmail">@contactEmail</a>
+			            <br />
+                    }
+                    @if ((contactAddressLine1 != null && contactAddressLine1.Length > 0) ||
+                         (contactAddressLine2 != null && contactAddressLine2.Length > 0) ||
+                         (cityStateZip.Length > 0))
+                    {
+                        <span class="stl_ContactAddress">
+                            @if (contactAddressLine1 != null && contactAddressLine1.Length > 0)
+                            {
+                                @contactAddressLine1
+                                <br />
+                            }
+                            @if (contactAddressLine2 != null && contactAddressLine2.Length > 0)
+                            {
+                                @contactAddressLine2
+                                <br />
+                            }
+                            @if (cityStateZip.Length > 0)
+                            {
+                                @cityStateZip
+                            }
+                        </span>
+                        <br />
+                    }
+                    <span class="stl_ContactWebsite"><a href="@contactWebsite">@contactWebsite</a></span>
+			    </div>
+            </div>
+        </div>
+	}
+}

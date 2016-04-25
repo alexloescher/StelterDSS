@@ -1,0 +1,98 @@
+@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{
+    Boolean allCopyVariantsFailed = true;
+    var XHTMLEditor1 = Model;
+    if (XHTMLEditor1 != null)
+	{
+        if(Model != null && Model.EditMode){
+		    <div @_Helpers.RenderICEAttribute(XHTMLEditor1) class="stl_caseStudyBody navbar-collapse collapse" id="stl_case-study">
+		    @Html.Raw(XHTMLEditor1.Value)
+	        </div>
+        } else {
+            // get the page
+            ICMSPage pg = Model.Page;
+    
+            // get the donor categories
+            Dictionary<string, string> donorCats = Session["donorCats"] as Dictionary<string, string>;
+
+
+            string usrProfile = "";
+            if (donorCats != null)
+            {
+                int cnt = 0;
+                foreach (var keyValPair in donorCats)
+                {
+                    if (cnt > 0)
+                    {
+                        usrProfile += " and ";
+                    }
+                    usrProfile += keyValPair.Value;
+                    cnt++;
+                }
+            }
+            else
+            {
+                usrProfile = "unknown";
+            }
+            <span style="display: none">User Identified as: @usrProfile</span>
+
+
+            // get the copy variant list element
+            // for each copy variant, check for matching element
+            if (pg != null && donorCats != null && donorCats.Count() > 0)
+            {
+                IEnumerable<ICMSElement> copyVars = pg.Elements("CopyVariantComponent", "copy");
+                foreach (ICMSElement copyVar in copyVars) {
+                    Boolean profilesMatch = false;
+                    string targetElement = copyVar.GetElementValue("Element");
+                    if (!targetElement.IsNullOrEmpty() && targetElement.Equals(Model.Content.Name.ToString()))
+                    {
+                        // for each matching element, check for matching categories
+                        // if matching categories, replace copy with the copy variant
+                        IEnumerable<ICMSCategory> categories = (copyVar as ICMSComponentRequest).Categories;
+                        foreach (ICMSCategory cat in categories)
+                        {
+                            string variantCatType = cat.TypeName;
+                            string variantCatValue = cat.Name;
+                            if (donorCats.ContainsKey(cat.TypeName)) {
+                                string donorCatValue = donorCats[cat.TypeName];
+                                if (!donorCatValue.IsNullOrEmpty() && donorCatValue.Equals(variantCatValue))
+                                {
+                                    profilesMatch = true;
+                                }
+                                else
+                                {
+                                    profilesMatch = false;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                profilesMatch = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (profilesMatch == true)
+                    {
+                        string outCopy = _Functions.StringWithVariableSubstitution(copyVar.GetElementValue("Copy"), Model.Page);
+                        <div class="stl_caseStudyBody navbar-collapse collapse" id="stl_case-study">
+                        @Html.Raw(outCopy)
+                        </div>
+                        allCopyVariantsFailed = false;
+                        break; // stop looking for a match, we've got one
+                    }
+                }
+            }
+
+            if (allCopyVariantsFailed)
+            {
+                string outCopy = _Functions.StringWithVariableSubstitution(XHTMLEditor1.Value, Model.Page);
+                <div class="stl_caseStudyBody navbar-collapse collapse" id="stl_case-study">
+                @Html.Raw(outCopy)
+                </div>
+            }
+        }
+	}
+}

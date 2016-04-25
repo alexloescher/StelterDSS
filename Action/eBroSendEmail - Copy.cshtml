@@ -1,0 +1,77 @@
+﻿@using System.Xml.Linq
+@using Ingeniux.Runtime.Models
+@{
+    var testEmail = "test@stelter.com";
+    var orgName = Request["orgName"];
+    var fname = Request["first"];
+    var email = Request["email"];
+    var lname = Request["last"];
+    var toEmail = Request["toEmail"];
+    var nextpage = Request["nextpage"];
+    var pageName = Request["pageName"];
+    var eBrochureId = Request["eBrochureId"];
+    Response.Write(RenderPage("sendPageContent.cshtml", fname, lname, email, pageName, eBrochureId, "eBrochure", nextpage));
+    var emailBody = RenderPage("eBroEmailBody.cshtml", fname, lname, email, pageName, nextpage, eBrochureId);
+    var honeypot = Request["honeypot"];
+
+    if (String.IsNullOrWhiteSpace(honeypot) && email.ToLower() != testEmail)
+    {
+        FormInfoWrapper wrapper = new FormInfoWrapper();
+        String referringUrl = Request.UrlReferrer != null ? Request.UrlReferrer.AbsoluteUri.Trim() : "Unknown";
+        wrapper.AddFormSubmission(orgName, referringUrl, "EBrochure", pageName, fname, lname, email, nextpage, eBrochureId);
+        try
+        {
+            // Initialize WebMail helper
+            WebMail.SmtpServer = "localhost";
+            WebMail.SmtpPort = 25;
+            WebMail.UserName = "";
+            WebMail.Password = "";
+            WebMail.From = "stella@stelter.com";
+
+            // Send email only if we're not testing
+            if(email.ToLower() != testEmail)
+            { 
+                WebMail.Send(to: toEmail,
+                    subject: "eBrochure request from " + fname + " " + lname,
+                    body: emailBody.ToHtmlString()
+                );
+            }
+        
+@* Code to save to XML file
+        XDocument doc = new XDocument(
+            new XElement("FormRequests",
+                new XElement("eBrochureRequest",
+                    new XElement("fname", fname),
+                    new XElement("lname", lname),
+                    new XElement("donorEmail", email),
+                    new XElement("orgEmail", toEmail),
+                    new XElement("pageRef", pageName))));
+
+        var xmlPathLocation = System.Configuration.ConfigurationManager.AppSettings["PageFilesLocation"];
+
+        try {
+            XDocument ebrRequestsDoc = XDocument.Load(xmlPathLocation + "\\ebroRequests.xml");
+
+            ebrRequestsDoc.Root.Add(new XElement("eBrochureRequest",
+                new XElement("fname", fname),
+                new XElement("lname", lname),
+                new XElement("donorEmail", email),
+                new XElement("orgEmail", toEmail),
+                new XElement("pageRef", pageName)));
+
+            ebrRequestsDoc.Save(xmlPathLocation + "\\ebroRequests.xml");
+        }
+        catch (FileNotFoundException)
+        {
+            doc.Save(xmlPathLocation + "\\ebroRequests.xml");
+        }
+
+        //doc.Save("ebroRequest" + DateTime.Now.ToShortDateString() + ".xml");
+        *@
+        }
+        catch (Exception ex)
+        {
+            //do nothing
+        }
+    }
+}

@@ -1,0 +1,55 @@
+﻿@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    ICMSElement siteControl = Model.Element("CSiteControl");
+    ICMSElement nextStepsTrigger = Model.Element("NextStepsTriggerComponent") == null && siteControl != null ? siteControl.Element("NextStepsTriggerComponent") : Model.Element("NextStepsTriggerComponent");
+
+@* ---------------------- Next Steps -------------------- *@
+    String copy = Model.GetElementValue("NextStepsCopy");
+    if (nextStepsTrigger == null && !String.IsNullOrWhiteSpace(copy))
+    { 
+    <div class="row next-steps nextSteps stl-clearfix">
+        <!-- Next Steps with Optional eBrochure Pull Out -->
+        @{
+        bool showBrochure = Model.GetElementValue("FreeBrochureCheck2") == "true";
+        bool showPepc = Model.GetElementValue("DisplayPEPCPromowithinNextSteps") == "true";
+
+        String titlePlacement = siteControl != null ? siteControl.GetElementValue("NextStepsTitlePlacement") : "";
+        if (titlePlacement == "Full Width")
+        {
+            <h3 class="next-steps-head hidden-xs visible-md visible-lg">@Model.GetElementValue("NextStepsTitle")</h3>
+            <h3 class="visible-xs hidden-lg">
+                <a data-toggle="collapse" href="#next-steps">@Model.GetElementValue("NextStepsTitle")
+                    @{
+            bool isNonBootstrapMobile = _Functions.isMobile(Model) && siteControl != null && siteControl.GetElementValue("DisplayMode") == "Adaptive";
+            if (!isNonBootstrapMobile)
+            {
+                //hide the glyphicons for non-bootstrap mobile sites
+                        <span class="glyphicon glyphicon-plus-sign pull-right"></span>   
+            }
+                    }
+                </a>
+            </h3>
+        }
+            <div class="col-sm-@(showBrochure || showPepc ? "7" : "12")">
+                @Html.Partial("Other/NextSteps")
+            </div>
+        if (showBrochure || showPepc)
+        {
+            <div class="col-sm-5">
+                @{
+            if (showBrochure)
+            {
+                Html.RenderPartial("Other/eBrochure", Model);
+            }
+            if (showPepc)
+            {
+                Html.RenderPartial("Other/PEPCPromo", Model);
+            }
+                }
+            </div>
+        }
+        }
+    </div>
+    }
+}

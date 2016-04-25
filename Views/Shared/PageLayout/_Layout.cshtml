@@ -1,0 +1,64 @@
+﻿@model Ingeniux.Runtime.ICMSEnvironment
+@using Ingeniux.Runtime
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+	@{
+		var page = Model as CMSPageRequest;
+		if (!(page != null && page.IsPreview))
+		{
+		<base href="http://@Request.Url.Host/@Request.ApplicationPath/"/>	
+		}
+	}
+    <title></title>
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css"/>
+    @{
+        var siteControl = page.Element("CSiteControl");
+	    if (siteControl != null)
+	    {
+		    foreach (ICMSElement csslnk in siteControl.Elements("CSSLink"))
+            {
+                <link rel="Stylesheet" href="@csslnk.Value" />
+            }
+	    }
+    }
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-migrate-1.2.1.js"></script>
+    <script type="text/javascript" src="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+    @{
+	    if (siteControl != null)
+	    {
+		    foreach (ICMSElement csslnk in siteControl.Elements("JSLink"))
+            {
+                <script type="text/javascript" src="@csslnk.Value"></script>
+            }
+
+            ICMSElement addlHeadTagHtml = siteControl.Element("AdditionalHeadTagHTML");
+            if (addlHeadTagHtml != null && addlHeadTagHtml.Value.Length > 0) {
+                @Html.Raw(addlHeadTagHtml.Value)
+            }
+	    }
+    }
+    <!-- start gift illustrator files -->
+	<script type="text/javascript" src="http://web.giftillustrator.com/Calculator/Production/scripts/jquery.noConflict.noniframe.js"></script>
+	<script type="text/javascript" src="http://web.giftillustrator.com/Calculator/Production/scripts/jquery.fancybox-1.3.4.pack.js"></script>
+	<script type="text/javascript" src="http://web.giftillustrator.com/Calculator/Production/scripts/custom.fancybox.noniframe.js"></script>
+	<link rel="stylesheet" type="text/css" href="http://web.giftillustrator.com/Calculator/Production/css/jquery.fancybox-1.3.4.css" media="screen"/>
+	<link rel="stylesheet" type="text/css" href="http://web.giftillustrator.com/Calculator/Production/css/custom.fancybox.css" media="screen"/>
+	<!-- end gift illustrator files -->
+</head>
+<body style="background-color: #FFFFFF;">
+
+	@RenderBody()
+
+    @if (siteControl != null) {
+        ICMSElement addlHtmlInfo = siteControl.Element("AdditionalHTMLinfo");
+        if (addlHtmlInfo != null && addlHtmlInfo.Value.Length > 0)
+        {
+            @Html.Raw(addlHtmlInfo.Value)
+        }
+    }
+</body>
+</html>

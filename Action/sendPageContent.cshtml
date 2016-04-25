@@ -1,0 +1,95 @@
+﻿@{
+    var fname = PageData[0] as string;
+    var lname = PageData[1] as string;
+    var email = PageData[2] as string;
+    var pageName = PageData[3] as string;
+    var eBrochureId = PageData[4] as string;
+    var type = PageData[5] as string;
+    var nextPage = PageData[6] as string;
+    if (eBrochureId == "")
+    {
+        eBrochureId = pageName + " " + type;
+    }
+}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Ebrochure Send Email Page</title>
+
+        @{
+        string protocol = Request.IsSecureConnection ? "https:" : "http:";
+        <base href="@protocol//@Request.Url.Host/" />
+        }
+
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+        <script type="text/javascript" src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+        <script type="text/javascript">
+                //Setting global variables
+            @{
+                var orgId = "";
+                if (Session["orgId"] != null)
+                {
+                    orgId = Session["orgId"].ToString();
+                }
+                Session["orgId"] = orgId;
+            }
+            var orgId = "@orgId";
+            $(document).ready(function () {
+                window.location = "@nextPage";
+            });
+        </script>
+        <script type="text/javascript" src="/Scripts/s_code.js"></script>
+    </head>
+    <body>
+        <!-- SiteCatalyst code version: H.25.2.
+        Copyright 1996-2012 Adobe, Inc. All Rights Reserved
+        More info available at http://www.omniture.com -->
+        <script language="JavaScript" type="text/javascript"><!--
+            s.pageName = document.title
+            s.server = window.location.host
+            s.channel = "planned giving"
+            s.campaign = s.getQueryParam('src')
+            s.eVar16 = s.getQueryParam('formName')
+            s.prop17 = orgId
+            s.eVar27 = s.getQueryParam('et_firstName')
+            s.eVar28 = s.getQueryParam('et_lastName')
+            s.eVar29 = s.getQueryParam('et_email')
+            s.eVar30 = s.getQueryParam('et_donorID')
+            s.eVar31 = s.getQueryParam('et_subscriberKey')
+            s.eVar32 = s.getQueryParam('et_misc1')
+            s.eVar33 = s.getQueryParam('et_misc2')
+            s.eVar34 = s.getQueryParam('et_misc3')
+            s.eVar35 = s.getQueryParam('et_misc4')
+            s.eVar36 = s.getQueryParam('et_misc5')
+            s.eVar38 = s.getQueryParam('et_sendId')
+            s.eVar22 = '@fname'
+            s.eVar23 = '@lname'
+            s.eVar24 = '@email'
+            s.eVar26 = '@eBrochureId'
+            if (s.getQueryParam('featured') == "true") { s.events = s.apl(s.events, "event6", ",", 2); s.eVar18 = "Home Page Special Feature"; }
+            var pageurl = location.href.replace(/^(?:\/\/|[^\/]+)*\//, "");
+            var pagename = "";
+            if (pageurl.indexOf("?") < 0) {
+                if (pageurl.lastIndexOf("/") < 0) {
+                    pagename = pageurl;
+                } else {
+                    pagename = pageurl.substr(pageurl.lastIndexOf("/")+1);
+                }
+            } else {
+                if (pageurl.lastIndexOf("/") < 0) {
+                    pagename = pageurl.substring(0, pageurl.indexOf("?"));
+                } else {
+                    pagename = pageurl.substring(pageurl.lastIndexOf("/")+1, pageurl.indexOf("?"));
+                }
+            }
+            s.prop4 = pagename;
+            /************* DO NOT ALTER ANYTHING BELOW THIS LINE ! **************/
+            var s_code = s.t(); if (s_code) document.write(s_code)//--></script>
+        <script language="JavaScript" type="text/javascript"><!--
+            if (navigator.appVersion.indexOf('MSIE') >= 0) document.write(unescape('%3C') + '\!-' + '-')
+            //--></script><noscript><img src="http://thesteltercompany.d1.sc.omtrdc.net/b/ss/tsc-msu-dev/1/H.25.2--NS/0"
+        height="1" width="1" border="0" alt="" /></noscript><!--/DO NOT REMOVE/-->
+        <!-- End SiteCatalyst code version: H.25.2. -->
+    </body>
+</html>

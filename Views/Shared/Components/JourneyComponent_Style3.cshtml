@@ -1,0 +1,34 @@
+@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{	
+  
+    var journeyComponent = Model;
+    if (journeyComponent != null)
+    {
+        bool isMobile = _Functions.isMobile(Model);
+    <li>
+        <div class="adv-icon">
+            @{
+        if (isMobile)
+        {
+            //in mobile, always display the path label above the image
+            <h3>@journeyComponent.GetElementValue("PathLabel")</h3>
+            @Html.Partial("Editable/ImageField", journeyComponent.Element("PathImage"))
+        }
+        else {
+            @Html.Partial("Editable/ImageField", journeyComponent.Element("PathImage"))
+            <h3>@journeyComponent.GetElementValue("PathLabel")</h3>
+        }
+            }
+        </div>
+        <ul>
+            <li>
+                <div class="txtPopup">
+                    @* --------- Taxonomy Navigation ---------- *@
+                    @Html.Partial("Other/TaxonomyNavigation", journeyComponent.GetTaxonomyNavigation("Path"))
+                </div>
+            </li>
+        </ul>
+    </li>
+	}
+}

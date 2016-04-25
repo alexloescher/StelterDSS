@@ -1,0 +1,18 @@
+﻿@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{	
+    var XHTMLEditor1 = Model;
+    if (XHTMLEditor1 != null)
+	{
+        if(Model.EditMode){
+		    <div class="stl_clientMissionBody" @_Helpers.RenderICEAttribute(XHTMLEditor1)>
+		    @Html.Raw(XHTMLEditor1.Value)
+	        </div>
+        } else {
+            string outCopy = _Functions.MicroSiteStringWithVariableSubstitution(XHTMLEditor1.Value, Model.Page);
+            <div class="stl_clientMissionBody">
+            @Html.Raw(outCopy)
+            </div>
+        }
+	}
+}

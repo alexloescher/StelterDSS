@@ -1,0 +1,17 @@
+@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{
+    String compStyle = Model.Page.GetElementValue("JourneyPathsStyle"); // default to button_bottom
+    String img = Model.GetElementValue("PathImage");
+    <h3 class="stl-toggle">@Model.GetElementValue("PathLabel")</h3>
+    <div class="stl-section">
+        @{
+            if (compStyle.Contains("Full"))
+            {
+            @_Helpers.RenderImage(Model.Element("PathImage"), Url, "stl-fl-left")
+            }
+        }
+        @Html.Partial("Other/TaxonomyNavigation", Model.GetTaxonomyNavigation("Path"))
+        <div class="clear"></div>
+    </div>
+}

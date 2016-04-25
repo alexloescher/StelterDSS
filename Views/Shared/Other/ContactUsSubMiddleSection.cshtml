@@ -1,0 +1,63 @@
+@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    ICMSElement siteControl = Model.Element("CSiteControl");
+    bool isMobile = _Functions.isMobile(Model);
+    bool shouldUseAdaptiveMobile = siteControl != null && siteControl.GetElementValue("EnableAdaptiveMode") == "true";
+    String displayMode = siteControl != null ? siteControl.GetElementValue("DisplayMode") : "Bootstrap";
+    bool useBootstrap = displayMode == "Bootstrap" || (isMobile && shouldUseAdaptiveMobile);
+    String titlePlacement = siteControl != null ? siteControl.GetElementValue("TitlePlacement") : "Main";
+    if (useBootstrap)
+    {
+    <div class="main-copy">
+        @if (titlePlacement != "Full") {
+            Html.RenderPartial("Editable/MainCopyTitle", Model.Element("MainCopyTitle"));
+        }
+        <div class="row">
+            <div class="col-sm-12">
+                <!-- need to add class="text-left" to below subtitle, change to pass in class name -->
+                @{
+        Html.RenderPartial("Editable/MainCopySubtitle", Model.Element("MainCopySubtitle"));
+                }
+            </div>
+        </div>
+    </div>
+
+@* --------------------- Contact List -------------------- *@
+        IEnumerable<ICMSElement> contacts = Model.Elements("ContactComponent");
+        foreach (ICMSElement contact in contacts)
+        {
+            Html.RenderPartial("Components/ContactComponent", contact);
+        }
+
+@* ------------------- Custom Client Content ----------------- *@
+    <div class="additional-info">
+        @{
+        Html.RenderPartial("Editable/XHTMLField", new ViewDataDictionary(Model.Element("AdditionalInfo")));
+        }
+    </div>
+    }
+    else
+    {
+        //non-bootstrap version
+        if (titlePlacement != "Full")
+        {
+            Html.RenderPartial("Editable/MainCopyTitle", Model.Element("MainCopyTitle"));
+        }
+        Html.RenderPartial("Editable/MainCopySubtitle", Model.Element("MainCopySubtitle"));
+
+@* --------------------- Contact List -------------------- *@
+        IEnumerable<ICMSElement> contacts = Model.Elements("ContactComponent");
+        foreach (ICMSElement contact in contacts)
+        {
+            Html.RenderPartial("Components/ContactComponent", contact);
+        }
+
+@* ------------------- Custom Client Content ----------------- *@
+    <div class="additional-info">
+        @{
+        Html.RenderPartial("Editable/XHTMLField", new ViewDataDictionary(Model.Element("AdditionalInfo")));
+        }
+    </div>
+    }
+    }

@@ -1,0 +1,9 @@
+@model Ingeniux.Runtime.CMSPageRequest
+@{
+    Layout = "~/Views/Shared/_MainLayout.cshtml";
+}
+@using Ingeniux.Runtime
+
+@{
+     Html.RenderPartial("Editable/FormJQuery", new ViewDataDictionary(Model.Element("FormJQuery")));
+}

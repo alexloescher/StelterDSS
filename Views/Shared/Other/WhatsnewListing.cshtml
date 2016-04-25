@@ -1,0 +1,219 @@
+@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    IEnumerable<ICMSElement> wnEnum = null;
+    IEnumerable<ICMSNavigatingCategory> wntxEnum = null;
+    List<ICMSElement> wnArticles = new List<ICMSElement>();
+    var wntxEnumCnt = 0;
+    var title = "What's New?";
+    int teaserLen = 200;
+    string readMoreLinkText = "";
+
+    var siteControl = Model.Element("CSiteControl");
+    if (siteControl != null)
+    {
+        ICMSElement homePgLink = siteControl.Element("Page", "HomeLink");
+        if (homePgLink != null)
+        {
+            var homePgId = homePgLink.GetAttributeValue("ID");
+            ICMSPage homePg = Model.Factory.GetPage(Request, homePgId) as ICMSPage;
+            if (homePg != null)
+            {
+                wnEnum = homePg.Elements("Page", "WhatsNewItem");
+                wntxEnum = homePg.GetTaxonomyNavigation("WhatsNewSyndications").AllCategories;
+                //to find the number of pages in the whats new navigation element
+                foreach (ICMSNavigatingCategory cat in wntxEnum)
+                {
+                    foreach (ICMSLinkElement page in cat.Pages)
+                    {
+                        wntxEnumCnt++;
+                    }
+                }
+
+                if (homePg.Element("WhatsNewItems").Value != "")
+                {
+                    title = homePg.Element("WhatsNewTitle").Value;
+                }
+
+                // Collect the client articles
+                foreach (ICMSElement lnk in wnEnum)
+                {
+                    wnArticles.Add(lnk);
+                }
+            }
+        }
+
+        // Get custom teaser length and readmore link text
+        foreach (var customVar in siteControl.Elements("Variable"))
+        {
+            if (!customVar.Value.IsNullOrEmpty())
+            {
+                string[] keyValuePair = customVar.Value.Split(',');
+                string key = keyValuePair[0].Trim();
+                string value = keyValuePair[1].Trim();
+                if (key.EqualsIgnoreCase("TeaserLength"))
+                {
+                    teaserLen = Convert.ToInt32(value);
+                }
+                if (key.EqualsIgnoreCase("ReadMoreLinkText"))
+                {
+                    readMoreLinkText = value;
+                }
+            }
+        }
+    }
+
+    // Retrieve categories from site control (modularize this code later)
+    List<string> siteGiftTypeExclusions = new List<string>();
+    if (siteControl != null)
+    {
+        ICMSTaxonomyNavigationElement gtExclusions = (ICMSTaxonomyNavigationElement)siteControl.Element("TaxonomyNavigation", "GiftTypeExclusions");
+        if (gtExclusions != null)
+        {
+            siteGiftTypeExclusions = gtExclusions.AllCategories.Select(gt => gt.ID).ToList();
+        }
+    }
+
+    /*
+     *  wntxEnum = FEATURE Articles
+     *  wnEnum = Client Articles
+     */
+
+    //if either of the list is not null && either of the list has some items && number of items is greater than 0
+    if ((wnEnum != null || wntxEnum != null) && (wnEnum.Count() > 0 || wntxEnumCnt > 0))
+    {
+        <div id="stl-whats-new-listing">
+                @{
+        // Collect the syndicated articles subject to gift exclusions
+        foreach (ICMSNavigatingCategory cat in wntxEnum)
+        {
+            var nPages = cat.PagesCount;
+            if (nPages > 0)
+            {
+                IEnumerable<ICMSLinkElement> featuredPages = cat.Pages.Where(item => item.GetAttributeValue("CategoryIds").Split('|').ToList().Intersect(siteGiftTypeExclusions).Any() == false);
+                foreach (ICMSLinkElement fpage in featuredPages)
+                {
+                    wnArticles.Add(fpage as ICMSElement);
+                }
+            }
+        }
+
+        // Filter and sort the articles using ExpirationDate and PublicationDate attributes, if present
+        IEnumerable<ICMSElement> wnSortedArticles = wnArticles.Where(
+            art => (art.GetAttributeValue("ExpirationDate").IsNullOrEmpty() || art.GetAttributeValue("ExpirationDate").ToLocalDate() >= DateTime.Today)
+                    &&
+                    (art.GetAttributeValue("PublicationDate").IsNullOrEmpty() || art.GetAttributeValue("PublicationDate").ToLocalDate() <= DateTime.Today)
+            ).OrderByDescending(pg => pg.GetAttributeValue("PublicationDate"));
+
+        // First render the sticky items
+        foreach (ICMSElement wnItem in wnSortedArticles.Where(elem => elem.GetAttributeValue("CategoryIds").Split('|').ToList().Contains("1") == true))
+        {
+            var linkName = !String.IsNullOrWhiteSpace(wnItem.GetAttributeValue("NavigationTitle")) ? wnItem.GetAttributeValue("NavigationTitle") :
+                !String.IsNullOrWhiteSpace(wnItem.GetAttributeValue("Link")) ? wnItem.GetAttributeValue("Link") : wnItem.GetAttributeValue("Name");
+            var linkURL = _Functions.GetLinkURL(wnItem, Url);
+            var linkTarget = wnItem.GetAttributeValue("Target");
+
+            string subtitle = "";
+            string teaser = "";
+
+            var articlePgId = wnItem.GetAttributeValue("ID");
+            ICMSPage articlePg = Model.Factory.GetPage(Request, articlePgId) as ICMSPage;
+            if (articlePg != null)
+            {
+                if (articlePg.Element("MainCopySubtitle") != null)
+                {
+                    subtitle = articlePg.Element("MainCopySubtitle").Value;
+                }
+                if (articlePg.Element("MainCopyBody") != null)
+                {
+                    var bodycopy = articlePg.Element("MainCopyBody").Value;
+                    string outCopy = _Functions.StringWithVariableSubstitution(bodycopy, articlePg);
+                    if (teaserLen > 0)
+                    {
+                        teaser = _Functions.Ellipsis(outCopy, teaserLen);
+                    }
+                }
+            }
+
+            <div class="wn-list-item">
+                <h3 class="wn-list-item-title"><a target="@linkTarget" href="@linkURL" class="sticky">@linkName</a></h3>
+                @if (!subtitle.IsEmpty())
+                {
+                    <p class="wn-subtitle">
+                        @subtitle
+                    </p>
+                }
+                @if (!teaser.IsEmpty())
+                {
+                    <p class="wn-list-teaser">
+                        @teaser
+                        @if (readMoreLinkText != null && !readMoreLinkText.Equals(""))
+                        {
+                            <a target="@linkTarget" href="@linkURL" class="readmore">@readMoreLinkText</a>
+                        }
+                    </p>
+                }
+            </div>
+        }
+
+        // Now render the rest
+        foreach (ICMSElement wnItem in wnSortedArticles.Where(elem => elem.GetAttributeValue("CategoryIds").Split('|').ToList().Contains("1") == false))
+        {
+            var linkName = !String.IsNullOrWhiteSpace(wnItem.GetAttributeValue("NavigationTitle")) ? wnItem.GetAttributeValue("NavigationTitle") :
+                !String.IsNullOrWhiteSpace(wnItem.GetAttributeValue("Link")) ? wnItem.GetAttributeValue("Link") : wnItem.GetAttributeValue("Name");
+            var linkURL = _Functions.GetLinkURL(wnItem, Url);
+            var linkTarget = wnItem.GetAttributeValue("Target");
+
+            string subtitle = "";
+            string teaser = "";
+
+            var articlePgId = wnItem.GetAttributeValue("ID");
+            if (!articlePgId.IsNullOrEmpty())
+            {
+                ICMSPage articlePg = Model.Factory.GetPage(Request, articlePgId) as ICMSPage;
+                if (articlePg != null)
+                {
+                    if (articlePg.Element("MainCopySubtitle") != null)
+                    {
+                        subtitle = articlePg.Element("MainCopySubtitle").Value;
+                    }
+                    if (articlePg.Element("MainCopyBody") != null)
+                    {
+                        var bodycopy = articlePg.Element("MainCopyBody").Value;
+                        string outCopy = _Functions.StringWithVariableSubstitution(bodycopy, articlePg);
+                        if (teaserLen > 0)
+                        {
+                            teaser = _Functions.Ellipsis(outCopy, teaserLen);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // Could be an External Link
+            }
+
+            <div class="wn-list-item">
+                <h3 class="wn-list-item-title"><a target="@linkTarget" href="@linkURL" class="sticky">@linkName</a></h3>
+                @if (!subtitle.IsEmpty())
+                {
+                    <p class="wn-subtitle">
+                        @subtitle
+                    </p>
+                }
+                @if (!teaser.IsEmpty())
+                {
+                    <p class="wn-list-teaser">
+                        @teaser
+                        @if (readMoreLinkText != null && !readMoreLinkText.Equals(""))
+                        {
+                            <a target="@linkTarget" href="@linkURL" class="readmore">@readMoreLinkText</a>
+                        }
+                    </p>
+                }
+            </div>
+        }
+                }
+        </div>
+    }
+}

@@ -1,0 +1,61 @@
+@model Ingeniux.Runtime.ICMSTaxonomyNavigationElement
+@using Ingeniux.Runtime
+@{
+    if (Model.IsPreview)
+    {
+    <script>
+        function setSessionValue(key, value) {
+            $.post('@Url.Content("~/Action/setSession.aspx")?key=' + key + '&value=' + value);
+        }
+    </script>
+    }
+    else
+    {
+    <script>
+        function setSessionValue(key, value) {
+            $.post('../../../Action/setSession.aspx?key=' + key + '&value=' + value);
+        }
+    </script>
+    }
+
+    var taxNavElement = Model;
+    if (taxNavElement != null)
+    {
+        // Retrieve categories from site control (modularize this code later)
+        List<string> siteGiftTypeExclusions = new List<string>();
+        var siteControl = Model.Page.Element("CSiteControl");
+        if (siteControl != null)
+        {
+            ICMSTaxonomyNavigationElement gtExclusions = (ICMSTaxonomyNavigationElement)siteControl.Element("TaxonomyNavigation", "GiftTypeExclusions");
+            if (gtExclusions != null)
+            {
+                siteGiftTypeExclusions = gtExclusions.AllCategories.Select(gt => gt.ID).ToList();
+            }
+        }
+
+        IEnumerable<ICMSNavigatingCategory> navCats = taxNavElement.NavigatingCategories;
+        navCats = navCats.OrderBy(cat => cat.Description);
+        
+    <ul>
+        @foreach (ICMSNavigatingCategory cat in navCats)
+        {
+            var lbl = cat.Name;
+
+            // Filter for gift type exclusions
+            IEnumerable<ICMSLinkElement> featuredPages = cat.Pages.Where(item => item.GetAttributeValue("CategoryIds").Split('|').ToList().Intersect(siteGiftTypeExclusions).Any() == false);
+
+            //var nPages = cat.PagesCount;
+            var nPages = featuredPages.Count();
+            if (nPages == 1)
+            {
+                ICMSLinkElement page = featuredPages.First();
+            <li><a onclick="setSessionValue('@cat.TypeName', '@cat.Name.RequestEncode()');" href="@_Functions.GetLinkActionNew(page, Url)">@lbl</a></li>
+            }
+            else if (nPages > 1)
+            {
+            <li><a onclick="setSessionValue('@cat.TypeName', '@cat.Name.RequestEncode()');" class="stl-popup" href="#@cat.ID.Replace("CategoryNodes/", "")" data-toggle="modal" data-target="#@cat.ID.Replace("CategoryNodes/", "")">@lbl</a></li>
+            }
+        }
+    </ul>            
+    }
+}

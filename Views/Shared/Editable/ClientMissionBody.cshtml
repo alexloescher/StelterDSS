@@ -1,0 +1,26 @@
+﻿@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{	
+    var XHTMLEditor1 = Model;
+    if (XHTMLEditor1 != null)
+	{
+        if(Model.EditMode){
+		    <div class="stl_clientMissionBody" @_Helpers.RenderICEAttribute(XHTMLEditor1)>
+		    @Html.Raw(XHTMLEditor1.Value)
+	        </div>
+        } else {
+            string missionCopy = XHTMLEditor1.Value;
+            if (XHTMLEditor1.Value.IndexOf("@[whats_new]") != -1) {
+                string whatsNewHTML = Html.Partial("Other/Whatsnew", Model.Page).ToString();
+                missionCopy = missionCopy.Replace("@[whats_new]", whatsNewHTML);
+            }
+
+            <div class="stl_clientMissionBody">
+            @{
+                string outCopy = _Functions.StringWithVariableSubstitution(missionCopy, Model.Page);
+                @Html.Raw(outCopy)
+            }
+            </div>
+        }
+	}
+}

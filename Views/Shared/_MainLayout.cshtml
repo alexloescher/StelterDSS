@@ -1,0 +1,63 @@
+﻿@model Ingeniux.Runtime.CMSPageRequest
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using Ingeniux.Runtime
+@using Ingeniux.Runtime.Models
+@{
+    Boolean bIncludeHeaderInContainer = true;
+    Boolean bIncludeFooterInContainer = true;
+    var siteControl = Model.Element("CSiteControl");
+    var pageName = "";
+    bool isMobile = _Functions.isMobile(Model);
+    if(Model.Attribute("Name") != null)
+    {
+        pageName = Model.GetAttributeValue("Name").Replace(" ", string.Empty);
+    }
+    if (siteControl != null)
+    {
+        bIncludeHeaderInContainer = siteControl.Element("checkHeader").Value.Equals("true");
+        if (!bIncludeHeaderInContainer) {
+            if (!isMobile) {
+                @Html.Raw(siteControl.GetElementValue("TextHeader"))
+            }
+            Html.RenderPartial("PageLayout/Quicklinks", siteControl);
+            Html.RenderPartial("PageLayout/Header", siteControl);
+        }
+        bIncludeFooterInContainer = siteControl.Element("checkFooter").Value.Equals("true");
+    }
+    <div class="container" id="@pageName-container">
+        @{
+            if (bIncludeHeaderInContainer && siteControl != null)
+            {
+                Html.RenderPartial("PageLayout/Quicklinks", siteControl);
+                Html.RenderPartial("PageLayout/Header", siteControl);
+                if (!isMobile) {
+                    @Html.Raw(siteControl.GetElementValue("TextHeader"))
+                }
+            }
+        }
+
+        @RenderBody()
+
+        @{
+            if (siteControl != null)
+            {
+                if (bIncludeFooterInContainer)
+                {
+                    Html.RenderPartial("PageLayout/Footer", siteControl);
+                    if (!isMobile) {
+                        @Html.Raw(siteControl.GetElementValue("TextFooter"))
+                    }
+                }
+            }
+            }
+    </div>
+            if (siteControl != null && !bIncludeFooterInContainer)
+            {
+                Html.RenderPartial("PageLayout/Footer", siteControl);
+                if (!isMobile) {
+                    @Html.Raw(siteControl.GetElementValue("TextFooter"))
+                }
+            }
+        }

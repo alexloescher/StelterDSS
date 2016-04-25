@@ -1,0 +1,15 @@
+@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    <link rel="Stylesheet" href="@_Functions.GetPrebuiltPath("prebuilt/css/stelter-custom-master.css", Url, Model)" />
+    <link rel="Stylesheet" href="@_Functions.GetPrebuiltPath("prebuilt/css/stelter-journey.css", Url, Model)" />
+    var page = Model;
+    var siteControl = page.Element("CSiteControl");
+    if (siteControl != null)
+    {
+        foreach (ICMSElement csslnk in siteControl.Elements("Page", "CSSLink"))
+        {
+    <link rel="Stylesheet" href="@_Functions.GetLinkURL(csslnk, Url)" />
+        }
+    }
+}

@@ -1,0 +1,222 @@
+@model CMSPageRequest
+@using Ingeniux.Runtime
+@using System.Text
+@{
+    Layout = "~/Views/Shared/_MainLayout.cshtml";
+
+    ICMSElement siteControl = Model.Element("CSiteControl");
+    String layoutGrid = siteControl != null ? siteControl.GetElementValue(Model.RootElementName.Replace("Page", "") + "Grid") : "";
+    layoutGrid = layoutGrid != "" ? layoutGrid : "3-6-3";
+
+    //set the bootstrap classes
+    var leftColBootstrapClass = "col-md-3 col-md-pull-9 col-lg-3 col-lg-pull-9";
+    var middleColBootstrapClass = "col-md-9 col-md-push-3 col-lg-9 col-lg-push-3";
+    var rightColBootstrapClass = "";
+    if (siteControl != null)
+    {
+        var intGrid = siteControl.GetElementValue("InteriorGrid");
+        _Functions.GetGridSettings(intGrid, out leftColBootstrapClass, out middleColBootstrapClass, out rightColBootstrapClass);
+    }
+
+    //get the banner
+    var banner = _Functions.GetBannerComponent(Model);
+    String bannerLoc = banner != null ? banner.GetElementValue("Columns") : "";
+    StringBuilder interiorHTML = new StringBuilder();
+
+    //get placements
+    String breadCrumbPlacement = siteControl != null ? siteControl.GetElementValue("BreadcrumbPlacement") : "Full";
+    String sharePlacement = siteControl != null ? siteControl.GetElementValue("SharePlacement") : "Full";
+    String pageHeaderPlacement = siteControl != null ? siteControl.GetElementValue("PageHeaderPlacement") : "Full";
+    String titlePlacement = siteControl != null ? siteControl.GetElementValue("TitlePlacement") : "Main";
+    <div class="middle-section">
+        <a id="skip"></a>
+        @{
+            if (siteControl != null && breadCrumbPlacement == "Full")
+            {
+            <div class="row">
+                <div class="col-xs-12">
+                    @Html.Partial("Other/Breadcrumb", siteControl)
+                </div>
+            </div>
+            }
+@* Title and Share Bar *@
+            if ((siteControl != null && siteControl.Element("Share") != null && sharePlacement == "Full") || (_Functions.GetPageHeader(Model) != "" && pageHeaderPlacement == "Full"))
+            {
+            <div class="row">
+                @{
+                if (titlePlacement == "Full")
+                {
+                    Html.RenderPartial("Editable/Title", Model);
+                }
+                if (sharePlacement == "Full")
+                {
+                    Html.RenderPartial("Other/Share", Model);
+                }
+                }
+            </div>
+            }
+            if (siteControl != null && titlePlacement == "Full")
+            {
+                if (Model.Element("MainCopyTitle") != null)
+                {
+                    Html.RenderPartial("Editable/MainCopyTitle", Model.Element("MainCopyTitle"));
+                }
+                else if (Model.Element("ClientMissionTitle") != null)
+                {
+                    Html.RenderPartial("Editable/ClientMissionTitle", Model.Element("ClientMissionTitle"));
+                }
+            }
+
+            string usrProfile = "";
+            Dictionary<string, string> donorCats = Session["donorCats"] as Dictionary<string, string>;
+            if (donorCats != null)
+            {
+                int cnt = 0;
+                foreach (var keyValPair in donorCats)
+                {
+                    if (cnt > 0)
+                    {
+                        usrProfile += " and ";
+                    }
+                    usrProfile += keyValPair.Value;
+                    cnt++;
+                }
+            }
+            else
+            {
+                usrProfile = "unknown";
+            }
+            <span style="display: none">User Profile is: @usrProfile</span>
+        }
+        @* Full Banner here *@
+        @{
+            if (bannerLoc == "Full")
+            {
+                //Html.RenderPartial("Components/BannerComponent", banner);
+                interiorHTML.Append(Html.Partial("Components/BannerComponent", banner));
+
+                // Embedded URLs
+                if (!siteControl.Page.IsPreview && _Functions.UseUrlRewrites())
+                {
+                    ICMSElement homeUrl = siteControl.Element("Page", "HomeLink");
+                    if (homeUrl != null && !homeUrl.GetAttributeValue("Link").IsNullOrEmpty())
+                    {
+                        var siteName = "/" + homeUrl.GetAttributeValue("Link").ToLower() + "/";
+                        interiorHTML = interiorHTML.Replace(siteName, "/");
+                    }
+                }
+
+                @Html.Raw(interiorHTML)
+            }
+        }
+
+        @* Main Content and Vertical Navigation *@
+        <div class="row">
+            <div class="@middleColBootstrapClass sub-middle-section">
+                <!-- BEGIN: Sub middle section -->
+                @* Main Banner here *@
+                @{
+                    if (bannerLoc == "Main")
+                    {
+                        //Html.RenderPartial("Components/BannerComponent", banner);
+                        interiorHTML.Append(Html.Partial("Components/BannerComponent", banner));
+
+                        // Embedded URLs
+                        if (!siteControl.Page.IsPreview && _Functions.UseUrlRewrites())
+                        {
+                            ICMSElement homeUrl = siteControl.Element("Page", "HomeLink");
+                            if (homeUrl != null && !homeUrl.GetAttributeValue("Link").IsNullOrEmpty())
+                            {
+                                var siteName = "/" + homeUrl.GetAttributeValue("Link").ToLower() + "/";
+                                interiorHTML = interiorHTML.Replace(siteName, "/");
+                            }
+                        }
+
+                        @Html.Raw(interiorHTML)
+                    }
+                    if (siteControl != null && breadCrumbPlacement == "Main")
+                    {
+                    <div class="row">
+                        <div class="col-xs-12">
+                            @Html.Partial("Other/Breadcrumb", siteControl)
+                        </div>
+                    </div>
+                    }
+@* Title and Share Bar *@
+                    if ((siteControl != null && siteControl.Element("Share") != null && sharePlacement == "Main") || (_Functions.GetPageHeader(Model) != "" && pageHeaderPlacement == "Main"))
+                    {
+                    <div class="row">
+                        @{
+                        if (titlePlacement == "Main")
+                        {
+                            Html.RenderPartial("Editable/Title", Model);
+                        }
+                        if (sharePlacement == "Main")
+                        {
+                            Html.RenderPartial("Other/Share", Model);
+                        }
+                        }
+                    </div>
+                    }
+                }
+                @RenderBody()
+                @* ------------------ Copyright / Disclaimer ----------------- *@
+                @if (siteControl != null && siteControl.Element("CopyrightComponent") != null)
+                {
+                    <div class="copyright">
+                        @{
+                    Html.RenderPartial("Other/Disclaimer", siteControl);
+                        }
+                    </div>
+                }
+                <!-- END: Sub middle section -->
+            </div>
+            @{
+                if (leftColBootstrapClass != "")
+                {        
+                <div class="@leftColBootstrapClass vertical-navigation hidden-print hidden-sm visible-md visible-lg">
+                    <div class="vertical-nav-sub">
+                        @if (_Functions.GetPageHeader(Model) != "" && pageHeaderPlacement == "Left")
+                        {
+                            <p class="stl-page-header" @_Helpers.RenderICEAttribute(Model.Element("Title"))>@_Functions.GetPageHeader(Model)</p>
+                        }
+                        <!-- BEGIN: Left Column Components -->
+                        @if (Model.GetElementValue("LeftColumnDisplay").EqualsIgnoreCase("Inherit") || Model.GetElementValue("LeftColumnDisplay").EqualsIgnoreCase("Append"))
+                        {
+                            Html.RenderPartial("Other/SiteControlLeftNav", Model);
+                        }
+                        @if (Model.GetElementValue("LeftColumnDisplay").EqualsIgnoreCase("Replace") || Model.GetElementValue("LeftColumnDisplay").EqualsIgnoreCase("Append"))
+                        {
+                            Html.RenderPartial("Other/PageLeftNav", Model);
+                        }
+                        <!-- END: Left Column Components -->
+                    </div>
+                </div>
+                }
+            }
+            @{
+                if (rightColBootstrapClass != "")
+                {
+                <div class="@rightColBootstrapClass vertical-navigation hidden-print hidden-sm visible-md visible-lg right-col">
+                    <div class="vertical-nav-sub">
+                        @if (_Functions.GetPageHeader(Model) != "" && pageHeaderPlacement == "Right")
+                        {
+                            <p class="stl-page-header" @_Helpers.RenderICEAttribute(Model.Element("Title"))>@_Functions.GetPageHeader(Model)</p>
+                        }
+                        <!-- BEGIN: Right Column Components -->
+                        @if (Model.GetElementValue("RightColumnDisplay").EqualsIgnoreCase("Inherit") || Model.GetElementValue("RightColumnDisplay").EqualsIgnoreCase("Append"))
+                        {
+                            Html.RenderPartial("Other/SiteControlRightNav", Model);
+                        }
+                        @if (Model.GetElementValue("RightColumnDisplay").EqualsIgnoreCase("Replace") || Model.GetElementValue("RightColumnDisplay").EqualsIgnoreCase("Append"))
+                        {
+                            Html.RenderPartial("Other/PageRightNav", Model);
+                        }
+                        <!-- END: Right Column Components -->
+                    </div>
+                </div>
+                }
+            }
+        </div>
+    </div>
+}

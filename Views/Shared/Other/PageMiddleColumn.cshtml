@@ -1,0 +1,85 @@
+@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    var siteControl = Model.Element("CSiteControl");
+    for(var i = 1; i <= 6; i++)
+    {
+        IEnumerable<ICMSElement> row = Model.XPathSelectElements("//*[starts-with(@Name,'Row" + i + "') and @IsComponent='true']");
+        int[] isPresent = {0,0,0,0};
+        int[] colUnit = {0,0,0,0};
+        int columnsUnit = 3;
+        foreach (ICMSElement comp in row)
+        {
+            var temp = comp.GetAttributeValue("Name")[comp.GetAttributeValue("Name").Length - 1];
+            int columnIndex = temp - '1';
+            isPresent[columnIndex] = 1;
+        }
+        if (isPresent[0] != 0)
+        {
+            int value = 3;
+            int key = 0;
+            for (var j = 0; j <= 3; j++)
+            {
+                if (isPresent[j] == 0)
+                {
+                    value += columnsUnit;
+                }
+                else 
+                {
+                    colUnit[key] = value;
+                    key = j;                    
+                    value = 3;                    
+                }
+            }
+            colUnit[key] = value;
+            //render html here
+            <div class="row">
+                @foreach (ICMSElement comp in row)
+                {
+                    var temp = comp.GetAttributeValue("Name")[comp.GetAttributeValue("Name").Length - 1];
+                    int columnIndex = temp - '1';
+                
+                    <div class="col-sm-@colUnit[columnIndex] col-xs-12">
+                    @{
+                        string compName = (comp as CMSPageRequest).RootElementName;
+                        try
+                        {
+                            ViewDataDictionary dict = new ViewDataDictionary { { "ContainerId", comp.GetElementValue("ContainerId") },
+                                                                { "ContainerClass", comp.GetElementValue("ContainerClass") },
+                                                                { "ContainerLocalStyle", comp.GetElementValue("ContainerLocalStyle") },
+                                                                { "IncludeDivider", false }
+                                                            };
+
+                            if (compName.Equals("CalloutComponent"))
+                            {
+                                Html.RenderPartial("Other/LinkSetField", new ViewDataDictionary(Model.XPathSelectElement("/*/CSiteControl/LinkSet[@Name='Callout']")));
+                                Html.RenderPartial("Other/LinkSetField", new ViewDataDictionary(Model.XPathSelectElement("/*/LinkSet[@Name='Callout']")));
+                            }
+                            else if (compName.Equals("SocialComponent") && siteControl != null)
+                            {
+                                Html.RenderPartial("Other/SocialHub", siteControl.Element("SocialHub"), dict);
+                            }
+                            else if (compName.Equals("WhatsNewComponent"))
+                            {
+                                Html.RenderPartial("Components/WhatsnewComponent", Model.Page, dict);
+                            }
+                            else 
+                            {
+                                Html.RenderPartial("Components/" + compName, comp);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            // no view for this component or exception
+                        }
+                    }
+                </div>                
+                }
+            </div>
+        }
+        else 
+        {
+            //ignore those rows with column1 missing   
+        }
+    }
+}

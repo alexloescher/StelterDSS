@@ -1,0 +1,15 @@
+﻿@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{	
+    var XHTMLEditor1 = Model;
+    if (XHTMLEditor1 != null)
+	{
+        if(Model != null && Model.EditMode){
+		    <div @_Helpers.RenderICEAttribute(XHTMLEditor1)>
+		    @Html.Raw(XHTMLEditor1.Value)
+	        </div>
+        } else {   
+            @Html.Raw(XHTMLEditor1.Value)
+        }
+	}
+}

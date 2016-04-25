@@ -1,0 +1,28 @@
+﻿@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{
+    var imgElem = Model.Element("BannerImage");
+    if(imgElem != null)
+    {
+        var txtOverlay = Model.Element("TextOverlay");
+        var txtOverlayVal = "";
+        if(txtOverlay != null)
+        {
+            txtOverlayVal = txtOverlay.Value;   
+        }
+        var imgPage = Model.Element("Page", "Link");
+        var imgUrl = "";
+        if(imgPage != null)
+        {
+            imgUrl = _Functions.GetLinkURL(imgPage, Url);
+        }
+        <div class="single-banner full-banner">
+            <a href="@imgUrl">
+                @Html.Partial("Editable/ImageField", imgElem)
+                <div class="carousel-caption">
+                    @Html.Raw(txtOverlayVal)
+                </div>            
+            </a>
+        </div>
+    }
+}

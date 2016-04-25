@@ -1,0 +1,55 @@
+﻿@model Ingeniux.Runtime.CMSPageRequest
+@{
+	Layout = "~/Views/Shared/_MicroLayout.cshtml";
+}
+@using Ingeniux.Runtime
+@using Ingeniux.Runtime.Models
+@{
+    Boolean bIncludeHeaderInContainer = true;
+    Boolean bIncludeFooterInContainer = true;
+    var siteControl = Model.Element("MicroSiteControl");
+    var pageName = "";
+    if(Model.Attribute("Name") != null)
+    {
+        pageName = Model.GetAttributeValue("Name").Replace(" ", string.Empty);
+    }
+    if (siteControl != null)
+    {
+        bIncludeHeaderInContainer = siteControl.Element("checkHeader").Value.Equals("true");
+        if (!bIncludeHeaderInContainer) {
+            Html.RenderPartial("PageLayout/Quicklinks", siteControl);
+            Html.RenderPartial("PageLayout/Header", siteControl);
+        }
+        bIncludeFooterInContainer = siteControl.Element("checkFooter").Value.Equals("true");
+    }
+    <div class="container" id="@pageName-container">
+        @{
+            if (bIncludeHeaderInContainer && siteControl != null)
+	        {
+                Html.RenderPartial("PageLayout/Quicklinks", siteControl);
+                
+                string outHdr = _Functions.MicroSiteStringWithVariableSubstitution(Html.Partial("PageLayout/Header", siteControl).ToString(), Model);
+                @Html.Raw(outHdr)
+            }
+        }
+
+        @{
+            string outBody = _Functions.MicroSiteStringWithVariableSubstitution(RenderBody().ToString(), Model);
+            @Html.Raw(outBody)
+        }
+
+        @{
+            if (siteControl != null)
+            {
+                if (bIncludeFooterInContainer)
+                {   
+                    string outFtr = _Functions.MicroSiteStringWithVariableSubstitution(Html.Partial("PageLayout/Footer", siteControl).ToString(), Model);
+                    @Html.Raw(outFtr)
+                }
+            }
+        }
+    </div>
+    if (siteControl != null && !bIncludeFooterInContainer) {
+        Html.RenderPartial("PageLayout/Footer", siteControl);
+    }
+}

@@ -1,0 +1,191 @@
+@model Ingeniux.Runtime.CMSPageRequest
+@{
+    ViewBag.Title = Model.Element("Title").ToNullHelper().Propagate<string>(ele => ele.Content.Value).Return("PG Home");
+    ICMSElement siteControl = Model.Element("CSiteControl");
+    bool isMobile = _Functions.isMobile(Model);
+    bool shouldUseAdaptiveMobile = siteControl != null && siteControl.GetElementValue("EnableAdaptiveMode") == "true";
+    String displayMode = siteControl != null ? siteControl.GetElementValue("DisplayMode") : "Bootstrap";
+    bool useBootstrap = displayMode == "Bootstrap" || (isMobile && shouldUseAdaptiveMobile);
+    bool useCustomTemplates = displayMode == "Custom";
+    ICMSElement broSettings = siteControl.Element("eBrochureSettings", "BrochureSettingsComponent");
+    bool hasBrochureSettings = broSettings != null;
+    bool hasOrgLogo = !siteControl.GetElementValue("OrgLogo").IsNullOrEmpty();
+    ICMSElement orgLogo = siteControl.Element("OrgLogo");
+    String lgLogoAlignment, smLogoAlignment;
+    lgLogoAlignment = smLogoAlignment = "left";
+    /*String lgLogoBg, smLogoBg;
+    lgLogoBg = smLogoBg = "#DDDDDD";*/
+    String lgLogo, smLogo;
+    lgLogo = smLogo = String.Empty;
+    IEnumerable<ICMSElement> lgLogos;
+    IEnumerable<ICMSElement> smLogos;
+    lgLogos = smLogos = Enumerable.Empty<ICMSElement>();
+    Layout = useBootstrap ? "~/Views/Shared/_MainLayout.cshtml" : "~/Views/Shared/_NonBootstrapMainLayout.cshtml";
+    if (useCustomTemplates)
+    {
+        Layout = null;
+    }
+    if (hasBrochureSettings)
+    {
+        Layout = "~/Views/Shared/_BrochureLayout.cshtml";
+    }
+    if (hasBrochureSettings)
+    {
+        String temp = broSettings.GetElementValue("LgLogoAlignment");
+        lgLogoAlignment = temp != "" ? temp : lgLogoAlignment;
+        temp = broSettings.GetElementValue("LgBackgroundColor");
+        //lgLogoBg = temp != "" ? temp : lgLogoBg;
+        lgLogos = broSettings.Elements("LgLogo");
+        lgLogo = broSettings.GetElementValue("LgeBrochureHeaderOverride");
+        
+        temp = broSettings.GetElementValue("SmLogoAlignment");
+        smLogoAlignment = temp != "" ? temp : lgLogoAlignment;
+        temp = broSettings.GetElementValue("SmBackgroundColor");
+        //smLogoBg = !temp.Equals("#") ? temp : lgLogoBg;
+        smLogos = broSettings.Elements("SmLogo");
+        smLogo = broSettings.GetElementValue("SmeBrochureHeaderOverride");
+    }
+
+    
+}
+@using Ingeniux.Runtime
+
+@{    
+    if (useCustomTemplates && !hasBrochureSettings)
+    {
+        @Html.Partial("CustomeBrochurePage")
+    }
+    else
+    {
+        if (hasBrochureSettings)
+        {
+            if (lgLogo.IsEmpty())
+            {
+                <div class="header lgHeader hidden-xs hidden-print" style="text-align:@lgLogoAlignment;padding:20px 0">
+                    <div class="container">
+                        @if (!lgLogos.First().Value.IsEmpty())
+                        {
+                            foreach (ICMSElement temp in lgLogos)
+                            {
+                                @_Helpers.RenderImage(temp, Url, "img-responsive")
+                            }
+                        }
+                        else
+                        {
+                            if (!orgLogo.Value.IsEmpty())
+                            {
+                                @_Helpers.RenderImage(orgLogo, Url, "img-responsive")
+                            }
+                        }
+                    </div>
+                </div>
+				<div class="print-header visible-print">
+					@if (!lgLogos.First().Value.IsEmpty())
+					{
+						foreach (ICMSElement temp in lgLogos)
+						{
+							@_Helpers.RenderImage(temp, Url, "img-responsive")
+						}
+					}
+					else
+					{
+						if (!orgLogo.Value.IsEmpty())
+						{
+							@_Helpers.RenderImage(orgLogo, Url, "img-responsive")
+						}
+					}
+				</div>
+            }
+            else
+            {
+                <div class="visible-xs">
+                    @Html.Raw(lgLogo);
+                </div>
+            }
+
+            if (smLogo.IsEmpty())
+            {
+                <div class="header smHeader visible-xs hidden-print" style="text-align:@smLogoAlignment;padding:20px 0">
+                    <div class="container">
+                        @if (!smLogos.First().Value.IsEmpty())
+                        {
+                            foreach (ICMSElement temp in smLogos)
+                            {
+                                @_Helpers.RenderImage(temp, Url, "img-responsive")
+                            }
+                        }
+                        else if (!lgLogos.First().Value.IsEmpty())
+                        {
+                            foreach (ICMSElement temp in lgLogos)
+                            {
+                                @_Helpers.RenderImage(temp, Url, "img-responsive")
+                            }
+                        }
+                        else
+                        {
+                            if (!orgLogo.Value.IsEmpty())
+                            {
+                                @_Helpers.RenderImage(orgLogo, Url, "img-responsive")
+                            }
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="visible-xs">
+                    @Html.Raw(smLogo);
+                </div>
+            }
+
+        }
+        <div class="stl-print-only">
+            @_Helpers.RenderImage(Model.Element("PrintLogoMasthead"), Url)            
+        </div>
+        <div class="clearfix"></div>
+    
+        @_Helpers.RenderImage(Model.Element("Image"), Url, "float-left stl-fl-left")
+        var ebrID = Request.QueryString["ebr"];
+        if (ebrID != null)
+        {
+            ICMSPage eBrComponent = Model.Factory.GetPage(Request, ebrID) as ICMSPage;
+            if (eBrComponent != null)
+            {
+                ViewBag.Title = eBrComponent.GetAttributeValue("Name");
+                    
+                ICMSElement eBrHTML = eBrComponent.Element("OfferingCopy");
+                if (eBrHTML != null)
+                {
+                    string outCopy = _Functions.StringWithVariableSubstitution(eBrHTML.Value, Model);
+                    <div class="container">
+                        <span class="glyphicon glyphicon-print hidden-print" aria-hidden="true" onclick="window.print();"></span>
+                        @Html.Raw(outCopy)
+                        
+                        @* ------------------ Brochure Contact ---------------------- *@
+                        @if (siteControl != null && siteControl.Element("ContactComponent", "ContactUsComponent") != null && hasBrochureSettings)
+                        {
+                            <div class="brochure-contact">								
+                                @{
+                            Html.RenderPartial("Custom/EbrochureContactComponent", siteControl.Element("ContactComponent", "ContactUsComponent"));
+                                }
+                            </div>
+                        }
+                        <div class="clearfix"></div>
+                        @* ------------------ Copyright / Disclaimer ----------------- *@
+                        @if (siteControl != null 
+                            && siteControl.Element("CopyrightComponent") != null 
+                            && !outCopy.Contains("&copy; The Stelter Company"))
+                        {
+                            <div class="stl-copyright">
+                                &#x000A9; The Stelter Company
+                                @{
+                                    Html.RenderPartial("Other/Disclaimer", siteControl);
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            }
+        }
+    }
+}

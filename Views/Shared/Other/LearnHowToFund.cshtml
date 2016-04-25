@@ -1,0 +1,72 @@
+﻿@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    var title = Model.Element("LearnTitle");
+    var abs = Model.Element("LearnAbstract");
+    IEnumerable<ICMSElement> learnSub = Model.Elements("Learnhowtofunditsub");
+    if (learnSub.Count() > 0)
+    {
+
+        // Retrieve categories from site control (modularize this code later)
+        List<string> siteGiftTypeExclusions = new List<string>();
+        var siteControl = Model.Element("CSiteControl");
+        if (siteControl != null)
+        {
+            ICMSTaxonomyNavigationElement gtExclusions = (ICMSTaxonomyNavigationElement)siteControl.Element("TaxonomyNavigation", "GiftTypeExclusions");
+            if (gtExclusions != null)
+            {
+                siteGiftTypeExclusions = gtExclusions.AllCategories.Select(gt => gt.ID).ToList();
+            }
+        }
+
+    <div class="learn-how-to-fund subList">
+        @{
+        Html.RenderPartial("Editable/H3", title);
+        Html.RenderPartial("Editable/TextField", abs);
+            <ul>
+                @{
+        foreach (ICMSElement item in learnSub)
+        {
+            // Filter for gift type exclusions
+            var elemAssetLink = item.GetLinkItem("LearnAssetLink");
+            if (elemAssetLink == null)
+            {
+                continue;
+            }
+
+            var cats = item.GetLinkItem("LearnAssetLink").GetAttributeValue("CategoryIds");
+            List<string> learnCats = cats.Split('|').ToList();
+            if (learnCats.Intersect(siteGiftTypeExclusions).Any())
+            {
+                continue;
+            }
+
+            var learnAsset = item.Element("LearnAssets");
+            ICMSPage learnAssetComp = (ICMSPage)item.Factory.GetPage(Request, item.GetAttributeValue("ID"));
+            var assetLabel = "";
+            var assetTitle = "";
+            var assetAbs = "";
+            if (learnAssetComp != null && learnAsset != null)
+            {
+                assetLabel = learnAssetComp.GetAttributeValue("Name");
+                assetTitle = learnAsset.GetElementValue("Title");
+                assetAbs = learnAsset.GetElementValue("Abstract");
+            }
+            if (assetAbs == null)
+            {
+                assetAbs = "";
+            }
+            var readMoreLink = _Functions.GetLinkURL(item.GetLinkItem("LearnAssetLink"), Url);
+            if (assetTitle != null)
+            {
+                    <li>
+                        <a class="flyover-link" rel="#@assetLabel.ToLower().Replace(" ", string.Empty)-flyover">@assetTitle</a>
+                    </li>
+            }
+        }
+                }
+            </ul>        
+        }
+    </div>
+    }
+}

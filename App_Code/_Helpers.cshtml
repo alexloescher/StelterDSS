@@ -1,0 +1,135 @@
+﻿@using Ingeniux.Runtime
+@using System.Web.Mvc;
+
+@helper RenderLink(string url, string linkText, string target = "", string cssClasses = "", string cssStyles = "")
+{
+	string targetStr = !string.IsNullOrEmpty(target) ?
+		string.Format("target=\"{0}\"", target) : "";
+
+	string classStr = !string.IsNullOrEmpty(cssClasses) ?
+		string.Format("class=\"{0}\"", cssClasses) : "";
+
+	string stylesStr = !string.IsNullOrEmpty(cssStyles) ?
+		string.Format("style=\"{0}\"", cssStyles) : "";
+	
+	<a href="@url" @MvcHtmlString.Create(targetStr) @MvcHtmlString.Create(classStr) @MvcHtmlString.Create(stylesStr)>@linkText</a>
+}
+
+@helper RenderICEAttribute(ICMSElement ele, bool isComponent = false)
+{
+	if (ele.EditMode)
+	{
+		string fieldName = ele.Content.Name.LocalName;
+		if ((fieldName == "Page" || isComponent) && ele.Attribute("Name") != null) {
+			fieldName = ele.Content.GetAttributeValue("Name", "");
+		}
+
+		__razor_helper_writer.Write("EditFieldName=\"" + fieldName + "\" ");
+
+		//append EditFieldMode attribute if provided. The provider can be either the calling template, or passed in via ICE update request
+		if (!string.IsNullOrEmpty(ele.ViewMode)) 
+		{
+			__razor_helper_writer.Write("EditFieldTemplateMode=\"" + ele.ViewMode + "\" ");
+		}
+	}
+}
+
+@helper RenderImage(ICMSElement imageElt, UrlHelper urlHelper, string cssClasses = "", int width = 0)
+	{
+		if (imageElt != null && !String.IsNullOrWhiteSpace(imageElt.Value))
+		{
+			string widthStr = (width != 0) ? "width=\"" + width + "\"" : "";
+            
+            if (imageElt.Page.IsPreview) {
+			    string classStr = _Functions.GetClassAttrString(cssClasses);<img @RenderICEAttribute(imageElt)  src="@urlHelper.Asset("images/" + imageElt.Value, imageElt)" alt="@imageElt.GetAttributeValue("AlternateText")" @MvcHtmlString.Create(classStr + " " + widthStr) />
+            } else {
+                string classStr = _Functions.GetClassAttrString(cssClasses);<img @RenderICEAttribute(imageElt)  src="/images/@imageElt.Value" alt="@imageElt.GetAttributeValue("AlternateText")" @MvcHtmlString.Create(classStr + " " + widthStr) />
+            }
+        }
+}
+
+@helper RenderImage(String imagePath, UrlHelper urlHelper, String altText, ICMSElement randomElt, String cssClasses = "", int width = 0)
+    {
+        if (randomElt != null && !String.IsNullOrWhiteSpace(imagePath))
+        {
+            string widthStr = (width != 0) ? "width=\"" + width + "\"" : "";
+            string classStr = _Functions.GetClassAttrString(cssClasses);
+
+            if (randomElt != null && randomElt.Page.IsPreview)
+            {
+                <img src="@urlHelper.Asset("images/" + imagePath, randomElt)" alt="@altText" @MvcHtmlString.Create(classStr + " " + widthStr) />
+            }
+            else
+            {
+                <img src="/images/@imagePath" alt="@altText" @MvcHtmlString.Create(classStr + " " + widthStr) />
+            }
+            /*
+	<img src="@urlHelper.Asset("images/" + imagePath, randomElt)" alt="@altText" @MvcHtmlString.Create(classStr + " " + widthStr) />
+             */
+        }
+}
+
+@helper RenderCMSLink(ICMSLinkElement link, UrlHelper urlHelper, Boolean showSpan = false, String linkTextOverride = "", String cssClasses = "")
+    {
+        if (link != null)
+        {
+            if (link.Schema == null || (link.Schema != "Folder" && link.Schema.IndexOf("Component") == -1))
+            {
+                String linkURL = _Functions.GetLinkAction(link, urlHelper);
+                String linkText = (link.LinkName != null) ? link.LinkName : link.Name;
+                linkText = (!String.IsNullOrWhiteSpace(linkTextOverride)) ? linkTextOverride : linkText;
+                String target = (link.Attribute("Target") != null) ? link.Attribute("Target").Value : "";
+
+                string classStr = !string.IsNullOrEmpty(cssClasses) ?
+                    string.Format("class=\"{0}\"", cssClasses) : "";
+                if (showSpan)
+                {
+                    string targetStr = !string.IsNullOrEmpty(target) ?
+                        string.Format("target=\"{0}\"", target) : "";
+	<a href="@linkURL" @MvcHtmlString.Create(targetStr) @MvcHtmlString.Create(classStr) >
+		<span>@HttpUtility.HtmlDecode(linkText)</span></a>
+                }
+                else
+                {
+	@RenderLink(linkURL, linkText, target, cssClasses);
+                }
+            }
+        }
+}
+
+@helper RenderImageLink(ICMSElement link, UrlHelper urlHelper, ICMSElement imageElt, String imgClass = "", int width = 0)
+    {
+        if (link != null && urlHelper != null)
+        {
+            string targetStr = (!String.IsNullOrEmpty(link.GetAttributeValue("Target"))) ? string.Format("target=\"{0}\"", link.Attribute("Target").Value) : "";
+            String linkUrl = (link.URL.StartsWith("http")) ? link.URL : urlHelper.Content("~/" + link.URL); //_Functions.GetLinkAction(link, urlHelper);
+	<a href="@linkUrl" @MvcHtmlString.Create(targetStr)>@RenderImage(imageElt, urlHelper, imgClass, width)</a>
+        }
+        else
+        {
+	@RenderImage(imageElt, urlHelper, imgClass, width)
+        }	
+}
+
+@helper RenderImageLink(ICMSElement link, UrlHelper urlHelper, String imagePath, String imgClass = "", int width = 0)
+    {
+        if (link != null && urlHelper != null)
+        {
+            string targetStr = (link.Attribute("Target") != null && !String.IsNullOrEmpty(link.Attribute("Target").Value)) ?
+                string.Format("target=\"{0}\"", link.Attribute("Target").Value) : "";
+            String linkUrl = (link.URL.StartsWith("http")) ? link.URL : urlHelper.Content("~/" + link.URL); //_Functions.GetLinkAction(link, urlHelper);
+	<a href="@linkUrl" @MvcHtmlString.Create(targetStr) >@RenderImage(imagePath, urlHelper, "", link, imgClass, width)</a>
+        }
+        else
+        {
+	@RenderImage(imagePath, urlHelper, "", link, imgClass, width)
+        }	
+	
+}
+@helper RenderTextField(ICMSElement el)
+    {
+        if (el != null)
+        {
+		<p class="text-left" @RenderICEAttribute(el)>@el.Value</p>
+        }
+}

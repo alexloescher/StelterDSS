@@ -1,0 +1,9 @@
+﻿@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{	
+    var imageField1 = Model;
+    if (imageField1 != null)
+    {
+        @_Helpers.RenderImage(imageField1, Url);
+    }
+}

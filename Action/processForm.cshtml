@@ -1,0 +1,124 @@
+@using System.Xml.Linq
+@using System.Net.Mail
+@using Ingeniux.Runtime
+@{
+    // Recipients should be specified on the form.
+    var toEmail = "";
+    var bccEmail = "";
+    var subject = "Stelter: Form Fulfillment";
+    
+    // By default, return to referrer page and if not present, return to home.
+    var nextPage = Request.UrlReferrer != null ? Request.UrlReferrer.ToString() : "/";
+
+    //try
+    //{
+        Dictionary<string, string> data = new Dictionary<string, string>();
+        string[] keys = Request.Form.AllKeys;
+        for (int i = 0; i < keys.Length; i++)
+        {
+            string value = Request.Form[keys[i]];
+            string key = _Functions.LookupKeyName(keys[i]);
+
+            if (key != null && !(key.Equals("submit") || key.Equals("nextpage") || key.Equals("toEmail") || key.Equals("toemail") || key.Equals("bccEmail") || key.Equals("bccemail") || key.Equals("subject")))
+            {
+                data.Add(key, value);
+            }
+
+            if (key.Equals("nextpage") && value != null && !value.IsEmpty())
+            {
+                if (!value.StartsWith("http"))
+                {
+                    if (!Request.Url.ToString().Contains("ingeniuxondemand.com") && value.Contains(@"/"))
+                    {
+                        value = value.SubstringAfter(@"/");
+                    }
+
+                    nextPage = "/" + value;
+                }
+                else
+                {
+                    nextPage = value;
+                }   
+            }
+
+            if ((key.Equals("toEmail") || key.Equals("toemail")) && value != null && !value.IsEmpty())
+            {
+                toEmail = value;
+            }
+
+            if ((key.Equals("bccEmail") || key.Equals("bccemail")) && value != null && !value.IsEmpty())
+            {
+                bccEmail = value;
+            }
+
+            if (key.Equals("subject") && value != null && !value.IsEmpty())
+            {
+                subject = value;
+            }
+        }
+
+        var emailBody = RenderPage("processFormEmailBody.cshtml", data);
+        Response.Write(emailBody);
+
+        MailMessage mail = new MailMessage();
+        mail.From = new MailAddress("stella@stelter.com");
+        mail.To.Add(toEmail);
+        mail.Subject = subject;
+        mail.Body = emailBody.ToHtmlString();
+        mail.IsBodyHtml = true;
+        if (!bccEmail.Equals("")) {
+            mail.Bcc.Add(bccEmail);
+        }
+
+        SmtpClient smtp = new SmtpClient("localhost", 25);
+        smtp.UseDefaultCredentials = false;
+        smtp.Credentials = new System.Net.NetworkCredential("", "");
+        smtp.Send(mail);
+
+        @* Code to save to XML file
+        XDocument doc = new XDocument(
+            new XElement("FormRequests",
+                new XElement("eBrochureRequest",
+                    new XElement("fname", fname),
+                    new XElement("lname", lname),
+                    new XElement("donorEmail", email),
+                    new XElement("orgEmail", toEmail),
+                    new XElement("pageRef", pageName))));
+
+        var xmlPathLocation = System.Configuration.ConfigurationManager.AppSettings["PageFilesLocation"];
+
+        try {
+            XDocument ebrRequestsDoc = XDocument.Load(xmlPathLocation + "\\ebroRequests.xml");
+
+            ebrRequestsDoc.Root.Add(new XElement("eBrochureRequest",
+                new XElement("fname", fname),
+                new XElement("lname", lname),
+                new XElement("donorEmail", email),
+                new XElement("orgEmail", toEmail),
+                new XElement("pageRef", pageName)));
+
+            ebrRequestsDoc.Save(xmlPathLocation + "\\ebroRequests.xml");
+        }
+        catch (FileNotFoundException)
+        {
+            doc.Save(xmlPathLocation + "\\ebroRequests.xml");
+        }
+
+        //doc.Save("ebroRequest" + DateTime.Now.ToShortDateString() + ".xml");
+        *@
+    //}
+    //catch (Exception ex)
+    //{
+        //do nothing
+    //}
+
+    @*
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+    <script type="text/javascript" src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            window.location = "@nextPage";
+        });
+    </script>
+    *@
+}

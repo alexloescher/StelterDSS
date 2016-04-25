@@ -1,0 +1,16 @@
+﻿@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+<script type="text/javascript">
+//Setting global variables
+@{
+    var page = Model;
+    var siteControl = page.Element("CSiteControl");
+    var orgId = "";
+    if (siteControl != null)
+    {
+        orgId = siteControl.GetElementValue("OrgID");
+    }
+    Session["orgId"] = orgId;
+}
+var orgId = "@orgId";        
+</script>

@@ -1,0 +1,49 @@
+﻿@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{
+    var siteControl = Model;
+    if (siteControl != null)
+    {
+        // Setting the orgId
+        Session["orgId"] = siteControl.GetElementValue("OrgID");
+
+        // Setting the Tier
+        IEnumerable<ICMSCategory> categories = (siteControl as ICMSComponentRequest).Categories;
+        var tier = "Silver";
+        foreach (var cat in categories)
+        {
+            if (cat.Name == "Platinum")
+            {
+                tier = "Platinum";
+                break;
+            }
+            else if (cat.Name == "Gold")
+            {
+                tier = "Gold";
+                break;
+            }
+        }
+        Session["tier"] = tier;
+        
+        // Setting the default org email address (for brochure request notification)
+        var contact = siteControl.Element("ContactComponent", "ContactUsComponent");
+        if (contact != null && !contact.Element("Email").Value.IsNullOrEmpty())
+        {
+            var email = contact.Element("Email").Value;
+            Session["eBroEmail"] = email;
+        }
+        else
+        {
+            Session["eBroEmail"] = "Error";
+            Session["error"] = "Missing Contact Component or Contact Email";
+        }   
+    }
+    else
+    {
+        // This should not happen
+        Session["orgId"] = "Error";
+        Session["tier"] = "Error";
+        Session["eBroEmail"] = "Error";
+        Session["error"] = "Missing Site Control";
+    }
+}

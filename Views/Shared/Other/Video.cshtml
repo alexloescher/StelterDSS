@@ -1,0 +1,23 @@
+﻿@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    <div class="see-how-it-works">
+    @{
+        var title = Model.Element("VideoSectionTitle");
+        var video = Model.Element("Video");
+        var height = Model.Element("VideoHeight");
+
+        if (title != null && video != null && title.Value.Length > 0) {
+            <h3 class="text-left">@title.Value</h3>
+            <div class="video-container">
+            @{
+                var videoLink = video.Element("Page", "VideoLink");
+                if (videoLink != null) {
+                    <iframe width="100%" title="@videoLink.GetAttributeValue("Link")" height="@height.Value" src="@videoLink.GetAttributeValue("URL")&rel=0" allowfullscreen>Your browser does not seem to handle frames properly.</iframe>
+                }
+            }
+            </div>
+        }
+    }
+    </div>
+}

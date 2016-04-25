@@ -1,0 +1,14 @@
+﻿@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    var page = Model;
+    var siteControl = page.Element("CSiteControl");
+    if (siteControl != null)
+        {
+            ICMSElement addlHeadTagHtml = siteControl.Element("AdditionalHeadTagHTML");
+            if (addlHeadTagHtml != null && addlHeadTagHtml.Value.Length > 0)
+            {
+                @Html.Raw(addlHeadTagHtml.Value)
+            }
+        }
+} 

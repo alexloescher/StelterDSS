@@ -1,0 +1,9 @@
+﻿@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{	
+	var subtitle = Model;
+    if (subtitle != null && subtitle.Value != null && subtitle.Value.Length > 0)
+	{
+		<h2 class="stl-page-subtitle" @_Helpers.RenderICEAttribute(subtitle)>@_Functions.StringWithVariableSubstitution(subtitle.Value, Model.Page)</h2>
+	}
+}

@@ -1,0 +1,8 @@
+@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{		
+    if (!(Model != null && Model.IsPreview))
+    {
+        <base href="http://@Request.Url.Host/"/>     
+    }        
+}

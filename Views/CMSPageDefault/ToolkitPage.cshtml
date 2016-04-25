@@ -1,0 +1,29 @@
+@model Ingeniux.Runtime.CMSPageRequest
+@{
+    Layout = "~/Views/Shared/_LandingLayout.cshtml";
+}
+@using Ingeniux.Runtime
+@{
+    var siteControl = Model.Element("CSiteControl");
+    if (siteControl != null) {
+
+        // Ensure our session variables have been set
+        Html.RenderPartial("Other/SessionInit", siteControl);
+        
+        ICMSElement bodyHTML = Model.Element("PageBodyHTML");
+        if (bodyHTML != null)
+        {
+            <div id="stl-toolkit-body">
+            @{
+                string bodyCopy = bodyHTML.Value;
+                if (bodyHTML.Value.IndexOf("@[toolkit_ebr_links]") != -1)
+                {
+                    string ebrLinksHTML = Html.Partial("Other/ToolkitEbrLinks", siteControl.Page).ToString();
+                    bodyCopy = bodyCopy.Replace("@[toolkit_ebr_links]", ebrLinksHTML);
+                }
+                @Html.Raw(bodyCopy)
+            }
+            </div>
+        }
+    }
+}

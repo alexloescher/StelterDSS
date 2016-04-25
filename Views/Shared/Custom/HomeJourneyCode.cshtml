@@ -1,0 +1,26 @@
+﻿@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    if (Model.RootElementName == "HomePage" || Model.RootElementName == "CustomHomePage")
+    {
+    <link href="@_Functions.GetPrebuiltPath("prebuilt/css/stelter-journey.css", Url, Model)" rel="stylesheet" type="text/css" />
+@*<script type="text/javascript" src="@_Functions.GetPrebuiltPath("prebuilt/js/jquery.js", Url, Model)"></script>*@
+    <script type="text/javascript">
+        $(document).ready(function () {
+            // Accordions - Hide all, show on section
+            $('div.stl-accordion div.stl-section').hide();
+            $('div.stl-accordion .stl-toggle').click(function () {
+                if ($(this).next().is(':visible')) {
+                    $(this).next('div.stl-section').slideToggle();
+                    $(this).toggleClass('stl-open');
+                } else {
+                    $('div.stl-accordion div.stl-section').hide()
+                    $('div.stl-accordion .stl-toggle').removeClass('open')
+                    $(this).next('div.stl-section').slideToggle();
+                    $(this).toggleClass('stl-open');
+                }
+            });
+        });
+    </script>
+    }
+}

@@ -1,0 +1,258 @@
+﻿@model Ingeniux.Runtime.CMSPageRequest
+@{
+	Layout = "~/Views/Shared/_SectionLayout.cshtml";
+}
+@using Ingeniux.Runtime
+
+@if (Model != null)
+{
+    
+	CMSPageFactory pageFactory;
+    if (pageFactory.IsDesignTime)
+    {
+ 
+        Ingeniux.CMS.IContentStore contentStore = Ingeniux.Runtime.Controllers.CMSPageDefaultController.GetPreviewContentStore(Request.RequestContext, System.Configuration.ConfigurationManager.AppSettings["PreviewContentStore"].ToString());
+        Ingeniux.CMS.IReadonlyUser currentUser = Ingeniux.Runtime.Controllers.CMSPageDefaultController.GetPreviewCurrentUser(contentStore, Request.RequestContext, Session);
+ 
+        pageFactory = new Ingeniux.Preview.DocumentPreviewPageFactory(contentStore, currentUser, System.Configuration.ConfigurationManager.AppSettings["PageFilesLocation"].ToString(), false);
+        pageFactory.CacheSiteControls = false;
+    }
+    else
+    {
+        pageFactory = newCMSPageFactory(System.Configuration.ConfigurationManager.AppSettings["PageFilesLocation"].ToString(), false);
+        PageFactory.CacheSiteControls = true;
+    }
+	string sort = _Functions.GetQuerystring(Model.Page as CMSPageRequest, "sort");
+	string filterContent = _Functions.GetQuerystring(Model.Page as CMSPageRequest, "content");
+	string filterTag = _Functions.GetQuerystring(Model.Page as CMSPageRequest, "tag");
+	string qs = "";
+	//string thispage = _Functions.ThisPageUrl(Model.Page as ICMSPage, Url);
+	IEnumerable<ICMSLinkElement> documents = Model.GetNavigationItems("DocumentNavigation", NavigationElementType.Navigation, true, true).Where(elt => elt.Schema == "LibraryDocumentComponent");
+	IEnumerable<string> contentTypes = documents.Where(elt => elt.GetAttributeValue("Content") != "").Select(elt => elt.GetAttributeValue("Content")).Distinct();
+	//contentTypes = contentTypes.Concat(new [] {"Aquisition Date"});
+	IEnumerable<ICMSCategory> tags = _Functions.GetChildCategories(Model.Page as ICMSPage, "TagFilter", true).Where(elt => documents.Any(alt => alt.GetAttributeValue("CategoryIds").Contains(elt.ID))).Skip(1);
+	if(filterContent != "")
+	{
+		documents = documents.Where(elt => elt.GetAttributeValue("Content").ToLower() == filterContent.ToLower());
+		if (qs == "")
+		{
+			qs += "content=" + filterContent;
+		}
+		else 
+		{
+			qs += "&content=" + filterContent;
+		}
+	}
+
+	if (sort != "")
+	{
+		if (sort.ToLower() == "alpha")
+		{
+			documents = documents.OrderBy(elt => elt.GetAttributeValue("Name"));
+		}
+		if (sort.ToLower() == "recent")
+		{
+			documents = documents.OrderByDescending(elt => elt.GetAttributeValue("LastUpdated"));
+		}
+		if (sort.ToLower() == "acquisition")
+		{
+			documents = documents.Where(elt => elt.GetAttributeValue("AcquisitionDate") != "").OrderByDescending(elt => elt.GetAttributeValue("AcquisitionDate"));
+		}
+		if (qs == "")
+		{
+			qs += "sort=" + sort;
+		}
+		else
+		{
+			qs += "&sort=" + sort;
+		}
+	}
+
+
+	string currentURL = _Functions.ThisPageUrl(Model as ICMSPage, Url);
+	int currentPage = _Functions.IntegerOrDefault(_Functions.GetQuerystring(Model, "page"), 1);
+	var itemsPerPage = 6;
+	int startIndex = (currentPage - 1) * itemsPerPage;
+	int endIndex = (int)Math.Min(currentPage * itemsPerPage, documents.Count());
+	
+
+	Html.RenderPartial("Editable/Title", new ViewDataDictionary(Model.Element("Title")));
+	Html.RenderPartial("Editable/BodyCopy", new ViewDataDictionary(Model.Element("BodyCopy")));
+
+	<div class="hr double"></div>
+	<div class="search-filter">
+		<form method="get">
+			<span class="show-desktop">Sort by</span>
+			<select name="sort" onchange="this.form.submit();">
+				@switch (sort)
+				{
+					case "recent":
+						<option vlaue="alpha">Alphabetical</option>
+						//<option value="acquisition">Acquisition Date</option>	
+						<option value="recent" selected="selected">Last Updated</option>
+					break;
+					case "alpha":
+						<option vlaue="alpha" selected="selected">Alphabetical</option>
+						//<option value="acquisition">Acquisition Date</option>	
+						<option value="recent">Last Updated</option>
+					break;
+					case "acquisition":
+						<option vlaue="alpha">Alphabetical</option>
+						//<option value="acquisition" selected="selected">Acquisition Date</option>		
+						<option value="recent">Last Updated</option>
+					break;
+					default:
+						<option vlaue="alpha">Alphabetical</option>
+						//<option value="acquisition">Acquisition Date</option>		
+						<option value="recent">Last Updated</option>
+					break;
+				}
+			</select>
+			@if (contentTypes.Any())
+			{
+				<select name="content" onchange="this.form.submit();">
+					<option value="">Filter...</option>
+						@foreach (var contentType in contentTypes)
+						{
+							string selected = "";	
+							if (contentType != "" && contentType.ToLower() == filterContent.ToLower())
+							{
+								selected = "selected=\"selected\"";
+							}
+							<option value="@contentType" @selected>@contentType</option>
+						}
+				</select>
+			}
+			@{
+				if (tags.Any())
+				{
+					<select name="tag">
+						<option value="">Document Tag...</option>
+							@for (int i = 1; i < tags.Count(); i++)
+							{
+								ICMSCategory tag = tags.ElementAt(i);
+								string selected = "";	
+								if (tag.ID == filterTag)
+								{
+									selected = "selected=\"selected\"";
+								}
+								<option value="@tag.ID" @selected>@tag.Name</option>
+							}
+					</select>
+				}
+			}
+		</form>
+	</div>
+	<div class="hr double show-mobile"></div>@*
+	<div class="pager docs float-right">
+		@_Helpers.DocumentPagination(documents.Count(), itemsPerPage, currentPage, currentURL, qs)
+	</div>*@
+	<div class="clear"></div>
+	<div class="box-wrap three wide">
+
+	@{
+		for (int i = 0; i < documents.Count(); i++)
+		{
+			//if(startIndex <= i && i < endIndex)
+			//{
+				ICMSLinkElement document = documents.ElementAt(i);
+				ICMSPage page = pageFactory.GetPage(Request, document.ID) as ICMSPage;
+				if (page != null)
+				{
+					ICMSElement image = page.Element("Image230x300");
+					string documentName = page.GetAttributeValue("Name");
+					string content = page.GetElementValue("Content");
+					string lastUpdate = page.GetElementValue("LastUpdated");
+					string itemNumber = page.GetElementValue("ItemNumber");
+					string restrictions = page.GetElementValue("Restrictions");
+					string notForUse = page.GetElementValue("NotforuseIn");
+					IEnumerable<ICMSLinkElement> stateVersionLinks = page.GetLinkItems("Version");
+					IEnumerable<ICMSLinkElement> downloadLinks = page.GetLinkItems("Link");
+                    
+					<div class="document">
+						@if(image != null)
+						{
+							<p>@_Helpers.RenderImage(image, Url)</p>
+						}
+						@if(!string.IsNullOrWhiteSpace(documentName))
+						{
+							<h3>@documentName</h3>
+						}
+						<p>
+							@if(!string.IsNullOrWhiteSpace(content))
+							{
+								@:Content: <strong>@content</strong><br />
+							}
+							@if(!string.IsNullOrWhiteSpace(lastUpdate))
+							{
+								@:Last updated: <strong>@_Helpers.FormatDate(lastUpdate, "MMMM dd, yyyy")</strong><br />
+							}
+							@if(!string.IsNullOrWhiteSpace(itemNumber))
+							{
+								@:Item number: <strong>@itemNumber</strong><br />
+							}
+							@if(!string.IsNullOrWhiteSpace(restrictions))
+							{
+								@:Restrictions: <strong>@restrictions</strong><br />
+							}
+							@if(!string.IsNullOrWhiteSpace(notForUse))
+							{
+								@:Not for use in: <strong>@notForUse</strong>
+							}
+						</p>
+						@{
+							if (stateVersionLinks.Any())
+							{
+								<p>
+									<select>
+										<option>Download State Version</option>
+										@{
+											foreach (var stateVersionLink in stateVersionLinks)
+											{
+												<option value="@stateVersionLink.URL">@stateVersionLink.LinkName</option>
+											}
+										}
+									</select>
+
+								</p>
+							}
+							foreach (var downloadLink in downloadLinks)
+							{
+                                ICMSCategory filterID = (page as CMSPageRequest).Categories.FirstOrDefault();
+                                String overlayCatID = String.Empty;
+                                
+                                if(filterID != null)
+                                {
+                                    overlayCatID = filterID.ID;
+                                }
+                                                                
+								<p><a class="download button download-overlay-@overlayCatID" href="@Url.ProcessUrl(downloadLink.URL)" target="@downloadLink.GetAttributeValue("Target")">@downloadLink.LinkName <span class="icon">&nbsp;</span></a></p>
+							}
+						}
+					</div>
+					//The cut here defined these div's showing up somewhat randomly
+					//this was for the responsive design
+					//0 based indexing, so document 6, and 9 a plain clear
+					if (i % 9 == 5 || i % 9 == 8)
+					{
+						<div class="clear"></div>
+					}
+					// div 2, 4, and 8 etc
+					if (i % 9 == 1 || i % 9 == 3 || i % 9 == 7)
+					{
+						<div class="clear show-tablet"></div>
+					}
+					if (i % 9 == 2)
+					{
+						<div class="clear show-desktop"></div>
+					}
+				}
+			//}
+		}
+	}
+	</div>
+	<div class="hr double"></div>@*
+	<div class="pager">
+		@_Helpers.DocumentPagination(documents.Count(), itemsPerPage, currentPage, currentURL, qs)
+	</div>*@
+}

@@ -1,0 +1,50 @@
+﻿@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+<div class="journey-paths adventure clearfix">
+@* ---------------------- Journey Section -------------------- *@
+    @{
+        if (Model.Element("JourneyTitle") != null)
+        {
+		    <h3 class="hidden-xs visible-md visible-lg" @_Helpers.RenderICEAttribute(Model.Element("JourneyTitle"))>
+		        @Model.Element("JourneyTitle").Value
+	        </h3>
+        }
+        Html.RenderPartial("Editable/JourneyAbstract", new ViewDataDictionary(Model.Element("JourneyAbstract")));
+    }
+    <div id="journey-paths-details">
+    @{                    
+
+        <div>
+        @{
+            string lastElementID = "";
+            IEnumerable<ICMSElement> jPaths = Model.XPathSelectElements("/*/JourneyPathsComponent");
+            if (jPaths != null && jPaths.Count() > 0) {
+                ICMSElement lastElement = jPaths.LastOrDefault();
+                if (lastElement != null) {
+                    lastElementID = lastElement.GetAttributeValue("ID");
+                }
+            }                        
+            if (Model.Element("JourneyPathsStyle").Value.Trim() == "custom")
+            {   
+                var customSub = "";
+                foreach (ICMSElement item in jPaths)
+                {
+                    var tempImg = Html.Partial("Editable/PathImage", item.Element("PathImage")).ToString();
+                    var tempJlist = Html.Partial("Other/TaxonomyNavigation", item.GetTaxonomyNavigation("Path")).ToString();
+                    var tempCustomSub = Model.Element("CustomStyleTemplateSub").Value.Replace("#jimg", tempImg);
+                    tempCustomSub = tempCustomSub.Replace("#jtitle", item.GetElementValue("PathLabel"));                                
+                    tempCustomSub = tempCustomSub.Replace("#jlist", tempJlist.ToString());
+                    customSub += tempCustomSub;
+
+			        Html.RenderPartial("Custom/MiddleResults", item.GetTaxonomyNavigation("Path"),
+	                    new ViewDataDictionary { { "PathPrompter", item.GetElementValue("PathPrompter") } });
+                }                            
+                <div>
+                    @Html.Raw(Model.Element("CustomStyleTemplateMain").Value.Replace("#customsub", customSub))
+                </div>
+            }
+        }
+        </div>
+    }
+    </div>
+</div>

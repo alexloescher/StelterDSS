@@ -1,0 +1,54 @@
+@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{
+    bool isMobile = _Functions.isMobile(Model);
+    Boolean bLastGroup = Convert.ToBoolean(ViewData["last"]);
+    string pathItemNum = Convert.ToString(ViewData["pathItemNum"]);
+    string grpClass = "";
+    if (bLastGroup)
+    {
+        grpClass = "col-md-4 col-sm-6 col-xs-12 text-center advGroup stl-journey-group stlLast";
+    }
+    else
+    {
+        grpClass = "col-md-4 col-sm-6 col-xs-12 text-center advGroup stl-journey-group";
+    }
+    grpClass += " stl-journey-" + pathItemNum;
+
+    var journeyComponent = Model;
+    if (journeyComponent != null)
+    {
+    <!-- stlLast on last group -->
+    <div class="@grpClass">
+        @{
+        if (isMobile)
+        {
+            //in mobile, always display the path label above the image
+            <div class="row">
+                <div class="col-xs-12">
+                    <p class="stlButton iconNone">@journeyComponent.GetElementValue("PathLabel")</p>
+                </div>
+            </div>
+        }
+            <div class="row">
+                <div class="col-xs-12 advTxt">
+                    @Html.Partial("Editable/ImageField", journeyComponent.Element("PathImage"))
+                    <div class="txtPopup">
+                        @* --------- Taxonomy Navigation ---------- *@
+                        @Html.Partial("Other/TaxonomyNavigation", journeyComponent.GetTaxonomyNavigation("Path"))
+                    </div>
+                </div>
+            </div>
+        if (!isMobile)
+        {
+            //on desktop & tablet, keep the label below the image
+            <div class="row">
+                <div class="col-xs-12">
+                    <p class="stlButton iconNone">@journeyComponent.GetElementValue("PathLabel")</p>
+                </div>
+            </div>
+        }
+        }
+    </div>
+    }
+}

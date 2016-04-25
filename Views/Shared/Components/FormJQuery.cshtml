@@ -1,0 +1,33 @@
+﻿@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@using System.Xml.Linq;
+@using System.IO;
+@using System.Xml
+@using System.Xml.Xsl;
+@using System.Configuration;
+@{	
+	var form = Model;
+	if (form != null)
+	{
+	<div @_Helpers.RenderICEAttribute(form) >
+		@{
+		XDocument doc = new XDocument();//new XDocument.(Model.Page as CMSPageRequest).ContentDocument;
+		doc.Add(Model.Content);
+		XmlDocument xmlDoc = new XmlDocument();
+		using (var xmlReader = doc.CreateReader())
+		{
+			xmlDoc.Load(xmlReader);
+		}
+		XslTransform transform = new XslTransform();
+		String _SitePath = ConfigurationManager.AppSettings["PageFilesLocation"];
+		transform.Load(_SitePath + "/stylesheets/default-form.xsl");
+		StringWriter writer = new StringWriter();
+		transform.Transform(xmlDoc, null, writer);
+		var result = writer.ToString();
+		@Html.Raw(result)
+		
+		}
+	</div>
+	}
+	
+}

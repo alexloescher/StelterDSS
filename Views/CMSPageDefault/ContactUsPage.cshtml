@@ -1,0 +1,61 @@
+@model Ingeniux.Runtime.CMSPageRequest
+@using System.Text
+@{
+    ICMSElement siteControl = Model.Element("CSiteControl");
+    bool isMobile = _Functions.isMobile(Model);
+    bool shouldUseAdaptiveMobile = siteControl != null && siteControl.GetElementValue("EnableAdaptiveMode") == "true";
+    String displayMode = siteControl != null ? siteControl.GetElementValue("DisplayMode") : "Bootstrap";
+    bool useBootstrap = displayMode == "Bootstrap" || (isMobile && shouldUseAdaptiveMobile);
+    bool useCustomTemplates = displayMode == "Custom";
+
+    ViewBag.Title = Model.Element("MainCopyTitle").ToNullHelper().Propagate<string>(ele => ele.Content.Value).Return("Contact Us");
+    Layout = useBootstrap ? "~/Views/Shared/_InnerLayout.cshtml" : "~/Views/Shared/_NonBootstrapInnerLayout.cshtml";
+    if (useCustomTemplates)
+    {
+        Layout = null;
+    }
+}
+@using Ingeniux.Runtime
+
+@*Put contact us page content here*@
+@{
+    if (siteControl != null)
+    {
+        // Ensure our session variables have been set
+        Html.RenderPartial("Other/SessionInit", siteControl);
+    }
+    if (useCustomTemplates)
+    {
+    @Html.Partial("CustomContactUsPage")
+    }
+    else
+    {
+        //bootstrap and adaptive version
+        StringBuilder interiorHTML = new StringBuilder();
+        if (Model.GetElementValue("MainColumnDisplay").EqualsIgnoreCase("") || Model.GetElementValue("MainColumnDisplay").EqualsIgnoreCase("Append"))
+        {
+            //Html.RenderPartial("Other/ContactUsSubMiddleSection", Model);
+            interiorHTML.Append(Html.Partial("Other/ContactUsSubMiddleSection", Model));
+        }
+        if (Model.GetElementValue("MainColumnDisplay").EqualsIgnoreCase("Replace") || Model.GetElementValue("MainColumnDisplay").EqualsIgnoreCase("Append"))
+        {
+            //Html.RenderPartial("Other/PageMiddleColumn", Model);
+            interiorHTML.Append(Html.Partial("Other/PageMiddleColumn", Model));
+        }
+
+        // Process custom link replacements
+        if (siteControl != null)
+        {
+            Dictionary<string, string> map = new Dictionary<string, string>();
+            foreach (ICMSLinkElement link in siteControl.GetLinkItems("CustomLinkReplacement"))
+            {
+                map.Add(link.ID + ".xml", _Functions.GetLinkActionNew(link, Url));
+            }
+            foreach (var pair in map)
+            {
+                interiorHTML = interiorHTML.Replace(pair.Key, pair.Value);
+            }
+        }
+        @Html.Raw(interiorHTML)
+    }
+}

@@ -1,0 +1,169 @@
+﻿@model Ingeniux.Runtime.CMSPageRequest
+@using System.Text.RegularExpressions
+@{
+    ViewBag.Title = Model.Element("Title").ToNullHelper().Propagate<string>(ele => ele.Content.Value).Return("PG Home");
+    Layout = "~/Views/Shared/_NavLessLayout.cshtml";
+}
+@using Ingeniux.Runtime
+
+@*Put getting started page content here*@
+@{
+    var siteControl = Model.Element("CSiteControl");
+    var pgAbstract = Model.Element("Abstract");
+    IEnumerable<ICMSElement> questions = Model.XPathSelectElements("/*/GettingStartedQuestion");
+    var suggestions = Model.Element("Suggestions");
+
+    Html.RenderPartial("Editable/FullTitle", Model.Element("Title"));
+    if(pgAbstract != null){
+        Html.RenderPartial("Editable/XHTMLField", pgAbstract);        
+    }
+    if (questions != null && questions.Count() > 0)
+    {
+        var index = 1;
+        <ul>
+        @foreach (ICMSElement item in questions)
+        {
+            var question = item.Element("Question");
+            var answers = item.Elements("Answers");
+            ICMSPage page = (ICMSPage)item.Factory.GetPage(Request, item.GetAttributeValue("ID"));
+            if(question != null){
+                if(index == 1){
+                    @Html.Raw("<li class='q"+index+"' id='"+page.GetAttributeValue("Name")+"'>");
+                }else{
+                    @Html.Raw("<li class='q"+index+"' id='"+page.GetAttributeValue("Name")+"' style='display:none;'>");
+                }
+                <p>@Html.Raw(_Functions.StringWithVariableSubstitution(question.Value,Model))</p>
+                var index1 = 0;
+                foreach (ICMSElement answer in answers)
+                {
+                    var id = "Question" + index + "Option" + (index1+1);
+                    var name = "Question " + index + " Option " + (index1+1);
+                    var inputName = "Question" + index;
+                    var spanText = Regex.Replace(_Functions.StringWithVariableSubstitution(answer.Value, Model),"<[^>]*(>|$)",string.Empty);
+                    <div>
+                        <label for="@id" class="hide">@name</label>
+                        <input type="radio" name="@inputName" value="@index1" id="@id" data-title="@spanText"/><span>@Html.Raw(_Functions.StringWithVariableSubstitution(answer.Value,Model))</span>
+                    </div>
+                    index1++;
+                }
+                @Html.Raw("</li>");
+            }
+            index++;
+        } 
+        </ul>
+    }
+
+    if (Model.EditMode || Model.IsPreview) {
+        Html.RenderPartial("Editable/XHTMLField", suggestions);
+        return;
+    }
+
+    // Retrieve categories from site control (modularize this code later)
+    List<string> siteGiftTypeExclusions = new List<string>();
+    if (siteControl != null)
+    {
+        ICMSTaxonomyNavigationElement gtExclusions = (ICMSTaxonomyNavigationElement)siteControl.Element("TaxonomyNavigation", "GiftTypeExclusions");
+        if (gtExclusions != null)
+        {
+            siteGiftTypeExclusions = gtExclusions.AllCategories.Select(gt => gt.ID).ToList();
+        }
+    }
+
+    @*
+        1. From [suggestions.Content.Value], retrieve all xIDs from <a> tag href values
+        2. For each xID, retrieve its categoryIds and intersect with giftTypeExclusions
+        3. If intersection.Any() returns true, then add xID to a new list of "excluded suggestions"
+        4. For each excluded suggestion, remove entire <a> tag from [suggesions.Content.Value]
+        5. Output filtered value using:
+
+            string sectionCopy = xhtmlfield.Value;
+            if (xhtmlfield.Value.IndexOf("@[whats_new]") != -1)
+            {
+                ViewDataDictionary dict = new ViewDataDictionary { { "IncludeDivider", false } };
+                string whatsNewHTML = Html.Partial("Components/WhatsnewComponent", Model.Page, dict).ToString();
+                sectionCopy = sectionCopy.Replace("@[whats_new]", whatsNewHTML);
+            }
+            @Html.Raw(sectionCopy)
+    *@
+    
+    // 1. From [suggestions.Content.Value], retrieve all xIDs from <a> tag href values
+    //    Look for: href="x43.xml"
+
+    // Get all xIDs and <a> tags for them...
+    string raw_suggestions = suggestions.Content.Value;
+
+    // Use the pattern below to test in Preview, then use GetPage instead of GetPageByPath below
+    //string pattern = "(?<rmMe><a.*?href=[\"'](?<xID>x[0-9]{2,})\\.xml[\"'].*?</a>)";
+
+    string pattern = "(?<rmMe><a.*?href=[\"'](?<xPath>.*?)[\"'].*?</a>)";
+
+    Dictionary<string, List<string>> excludePages = new Dictionary<string, List<string>>();
+    List<string> pageIds = new List<string>();
+    MatchCollection matches = Regex.Matches(raw_suggestions, pattern);
+    
+    foreach (Match match in matches)
+    {
+        string pgPath = match.Groups["xPath"].Value;
+        string rmMe = match.Groups["rmMe"].Value;
+        if (!pageIds.Contains(pgPath))
+        {
+            pageIds.Add(pgPath);
+        }
+        if (excludePages.ContainsKey(pgPath))
+        {
+            excludePages[pgPath].Add(rmMe);
+        } else {
+            excludePages.Add(pgPath, new List<string> { rmMe });
+        }
+    }
+
+    // 2. For each xID, retrieve its categoryIds and intersect with giftTypeExclusions
+    // 3. Record the page ids to be excluded
+    List<string> excludePageIds = new List<string>();
+    foreach (string path in pageIds) {
+        ICMSPage page = Model.Factory.GetPageByPath(Request, path) as ICMSPage;
+        IEnumerable<ICMSCategory> categories = (page as ICMSComponentRequest).Categories;
+
+        List<string> pageCats = categories.Select(cat => cat.ID).ToList();
+        if (pageCats.Intersect(siteGiftTypeExclusions).Any()) {
+            excludePageIds.Add(path);
+        }
+    }
+    
+    // 4. For each excluded page, remove its <a> tag from the suggestions
+    foreach (string excl in excludePageIds) {
+        foreach (string rmStr in excludePages[excl]) {
+            raw_suggestions = raw_suggestions.Replace(rmStr, "");
+        }
+    }
+
+    // 4a. Cleanup -- remove duplicate <br> tags and successive <p> <br> tags
+    raw_suggestions = Regex.Replace(raw_suggestions, "<br />[\\S\\s]{0,2}(<br />)", "$1");
+    raw_suggestions = Regex.Replace(raw_suggestions, "(</p>)[\\S\\s]{0,2}<br />", "$1");
+
+    // 5. Output filtered value after first checking for inclusion of what's new section
+    if (raw_suggestions.IndexOf("@[whats_new]") != -1)
+    {
+        ViewDataDictionary dict = new ViewDataDictionary { { "IncludeDivider", false } };
+        string whatsNewHTML = Html.Partial("Components/WhatsnewComponent", Model.Page, dict).ToString();
+        raw_suggestions = raw_suggestions.Replace("@[whats_new]", whatsNewHTML);
+    }
+
+    // Adapt to IGX URL Rewrite Engine
+    if (!siteControl.Page.IsPreview && !Request.Url.Host.Contains("ingeniuxondemand.com"))
+    {
+        ICMSElement homeUrl = siteControl.Element("Page", "HomeLink");
+        if (homeUrl != null && !homeUrl.GetAttributeValue("Link").IsNullOrEmpty())
+        {
+            var siteName = "/" + homeUrl.GetAttributeValue("Link") + "/";
+            raw_suggestions = raw_suggestions.Replace(siteName, "/");
+        }
+    }
+    @Html.Raw(raw_suggestions)
+    
+    /* -- original non-filtered rendering of this section --
+    if(suggestions != null){
+        Html.RenderPartial("Editable/XHTMLField", suggestions);
+    }
+    */
+}

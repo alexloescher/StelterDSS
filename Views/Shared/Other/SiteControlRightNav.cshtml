@@ -1,0 +1,39 @@
+@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    var siteControl = Model.Element("CSiteControl");
+    if (siteControl != null) {
+        var scRightComps = siteControl.Elements().Where(ele => ele.GetAttributeValue("Name") == "RightItem");
+        if (scRightComps.Any())
+        {
+            foreach (var comp in scRightComps)
+            {
+                string compName = (comp as CMSPageRequest).RootElementName;
+                try
+                {
+                    ViewDataDictionary dict = new ViewDataDictionary { { "ContainerId", comp.GetElementValue("ContainerId") },
+                                                    { "ContainerClass", comp.GetElementValue("ContainerClass") },
+                                                    { "ContainerLocalStyle", comp.GetElementValue("ContainerLocalStyle") }
+                                                };
+
+                    if (compName.Equals("NavigationComponent")) {
+                        Html.RenderPartial("Components/NavigationComponent", siteControl, dict);
+                    } else if (compName.Equals("CalloutComponent")) {
+                        Html.RenderPartial("Other/LinkSetField", new ViewDataDictionary(Model.XPathSelectElement("/*/CSiteControl/LinkSet[@Name = 'Callout']")));
+                        Html.RenderPartial("Other/LinkSetField", new ViewDataDictionary(Model.XPathSelectElement("/*/LinkSet[@Name='Callout']")));
+                    } else if (compName.Equals("SocialComponent")) {
+                        Html.RenderPartial("Other/SocialHub", siteControl.Element("SocialHub"), dict);
+                    } else if (compName.Equals("WhatsNewComponent")) {
+                        Html.RenderPartial("Components/WhatsnewComponent", Model.Page, dict);
+                    } else {
+                        Html.RenderPartial("Components/" + compName, comp);
+                    }
+                }
+                catch (Exception e)
+                {
+                    // no view for this component or exception
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,13 @@
+﻿@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    var page = Model;
+    var siteControl = page.Element("CSiteControl");
+    if (siteControl != null)
+    {
+        foreach (ICMSElement csslnk in siteControl.Elements("Page", "JSLink"))
+        {
+            <script type="text/javascript" src="@_Functions.GetLinkURL(csslnk, Url)"></script>
+        }
+    }
+} 

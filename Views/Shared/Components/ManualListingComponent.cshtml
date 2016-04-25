@@ -1,0 +1,24 @@
+﻿@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{
+    string elemId = Model.GetElementValue("ContainerId");
+    string elemClass = Model.GetElementValue("ContainerClass");
+    string elemLocalStyle = Model.GetElementValue("ContainerLocalStyle");
+
+    string heading = Model.GetElementValue("Heading");    
+    
+    <div id="@elemId" class="@elemClass" style="@elemLocalStyle">
+        <ul id="rightnav" class="rtnav">
+            @foreach (ICMSElement lnk in Model.Elements("Page", "Link"))
+            {
+                var linkTitle = lnk.GetAttributeValue("Link");
+                var linkURL = _Functions.GetLinkURL(lnk, Url);
+                var target = lnk.GetAttributeValue("Target");
+
+                <li>
+                    <a target="@target" href="@linkURL">@linkTitle</a>
+                </li>
+            }
+        </ul>
+    </div>
+}

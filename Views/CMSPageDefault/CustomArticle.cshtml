@@ -1,0 +1,223 @@
+﻿@model Ingeniux.Runtime.CMSPageRequest
+@using System.Text
+@using System.Diagnostics
+@using System.Web.Hosting
+@{
+    ViewBag.Title = Model.Element("MainCopyTitle").ToNullHelper().Propagate<string>(ele => ele.Content.Value).Return("Planned Giving");
+    Layout = "~/Views/Shared/_CustomLayout.cshtml";
+    Stopwatch stopwatch = new Stopwatch();
+    stopwatch.Start();    
+}
+@using Ingeniux.Runtime
+@{
+    var page = Model;
+    var siteControl = page.Element("CSiteControl");
+    if (siteControl != null)
+    {
+        // Ensure our session variables have been set
+        Html.RenderPartial("Other/SessionInit", siteControl);
+    }
+
+    try
+    {
+        var customTemplate = Model.GetElementValue("CustomArticlePageTemplate");
+        var customTemplatePath = "";
+        if (customTemplate.IsNullOrEmpty() && siteControl != null)
+        {
+            customTemplate = siteControl.GetElementValue("CustomArticlePageTemplate");
+        }
+        StringBuilder customHTML = new StringBuilder();
+        if (!customTemplate.IsNullOrEmpty())
+        {
+            customTemplatePath = System.Configuration.ConfigurationManager.AppSettings["PageFilesLocation"];
+            //You might need to normalize paths more since you appear to be using UNIX style paths
+            if (!customTemplatePath.EndsWith("\\"))
+            {
+                customTemplatePath += "\\Documents\\";
+            }
+            customTemplatePath += customTemplate;
+            if (File.Exists(customTemplatePath))
+            {
+                customHTML.Append(File.ReadAllText(customTemplatePath));
+            }
+            string[] keyValueMap = { };
+            Dictionary<string, string> map = new Dictionary<string, string>();
+            map.Add("@[base]", Html.Partial("Custom/Base", Model).ToHtmlString());
+            map.Add("@[title]", Html.Partial("Custom/TitleTag", Model).ToHtmlString());
+            map.Add("@[magnific-css]", Html.Partial("Custom/MagnificCSS", Model).ToHtmlString());
+            map.Add("@[magnific-js]", Html.Partial("Custom/MagnificJS", Model).ToHtmlString());
+            map.Add("@[orgId-js]", Html.Partial("Custom/OrgIdJs", Model).ToHtmlString());
+            map.Add("@[jQuery]", Html.Partial("Custom/jQuery", Model).ToHtmlString());
+            map.Add("@[gilibs]", Html.Partial("Custom/GILibs", Model).ToHtmlString());
+            map.Add("@[s_codejs]", Html.Partial("Custom/SCodeJS", Model).ToHtmlString());
+            map.Add("@[flyovers]", Html.Partial("Components/FlyOverComponent", Model).ToHtmlString());
+            map.Add("@[pepc-form]", Html.Partial("Other/PEPCForm", Model).ToHtmlString());
+            map.Add("@[site-catalyst]", Html.Partial("Custom/SiteCatalystCode", Model).ToHtmlString());
+            if (siteControl != null)
+            {
+                map.Add("@[OrgId]", siteControl.GetElementValue("OrgID"));
+                map.Add("@[OrgName]", siteControl.GetElementValue("OrgName"));
+                ICMSElement orghome = siteControl.Element("Page", "OrgHomeLink");
+                if (orghome != null)
+                {
+                    map.Add("@[OrgHomeLink]", _Functions.GetLinkURL(orghome, Url));
+                    map.Add("@[OrgHomeLinkName]", orghome.GetAttributeValue("Link"));
+                }
+                ICMSElement home = siteControl.Element("Page", "HomeLink");
+                if (home != null)
+                {
+                    map.Add("@[PlannedGivingHomeLink]", _Functions.GetLinkURL(home, Url));
+                    map.Add("@[PlannedGivingHomeName]", home.GetAttributeValue("Link"));
+                }
+                map.Add("@[BreadCrumbs]", Html.Partial("Custom/Breadcrumb", siteControl).ToHtmlString());
+                ViewDataDictionary emptyDict = new ViewDataDictionary { { "ContainerId", "" }, { "ContainerClass", "" }, { "ContainerLocalStyle", "" } };
+                map.Add("@[VerticalNavigation]", Html.Partial("Components/NavigationComponent", siteControl, emptyDict).ToHtmlString());
+                <!-- BEGIN: Left Column Components -->
+                if (Model.GetElementValue("LeftColumnDisplay").EqualsIgnoreCase("Inherit") || Model.GetElementValue("LeftColumnDisplay").EqualsIgnoreCase("Append"))
+			    {
+                    map.Add("@[LeftComponents]", Html.Partial("Other/SiteControlLeftNav", Model).ToHtmlString());
+			    }
+                if (Model.GetElementValue("LeftColumnDisplay").EqualsIgnoreCase("Replace") || Model.GetElementValue("LeftColumnDisplay").EqualsIgnoreCase("Append"))
+                {
+                    map.Add("@[LeftComponents]", Html.Partial("Other/PageLeftNav", Model).ToHtmlString());
+                }
+                <!-- END: Left Column Components -->
+                <!-- BEGIN: Right Column Components -->
+                if (Model.GetElementValue("RightColumnDisplay").EqualsIgnoreCase("Inherit") || Model.GetElementValue("RightColumnDisplay").EqualsIgnoreCase("Append"))
+                {
+                    map.Add("@[RightComponents]", Html.Partial("Other/SiteControlRightNav", Model).ToHtmlString());
+                }
+                if (Model.GetElementValue("RightColumnDisplay").EqualsIgnoreCase("Replace") || Model.GetElementValue("RightColumnDisplay").EqualsIgnoreCase("Append"))
+                {
+                    map.Add("@[RightComponents]", Html.Partial("Other/PageRightNav", Model).ToHtmlString());
+                }
+                <!-- END: Right Column Components -->
+                map.Add("@[QuickLinks]", Html.Partial("PageLayout/Quicklinks", siteControl).ToHtmlString());
+                map.Add("@[Header]", Html.Partial("PageLayout/Header", siteControl).ToHtmlString());
+                map.Add("@[TextHeader]", siteControl.GetElementValue("TextHeader"));
+                map.Add("@[Footer]", Html.Partial("PageLayout/Footer", siteControl).ToHtmlString());
+                map.Add("@[TextFooter]", siteControl.GetElementValue("TextFooter"));
+
+                ICMSElement banner = _Functions.GetBannerComponent(Model);
+                map.Add("@[Banner]", Html.Partial("Components/BannerComponent", new ViewDataDictionary(banner)).ToHtmlString());
+                map.Add("@[SocialWidget]", Html.Partial("Other/SocialHub", siteControl.Element("SocialHub")).ToHtmlString());
+                map.Add("@[PEPCNotificationEmail]", siteControl.Element("PEPCNotificationEmail").Value);
+                var nextpage = "";
+                var pageName = "";
+                if (siteControl.Element("Page", "PEPCRedirectPage") != null)
+                {
+                    if (!siteControl.Element("Page", "PEPCRedirectPage").GetAttributeValue("Schema").IsNullOrEmpty())
+                    {
+                        nextpage += "/";
+                    }
+                    nextpage += _Functions.GetLinkURL(siteControl.Element("Page", "PEPCRedirectPage"), Url); ;
+                    pageName = siteControl.Element("Page", "PEPCRedirectPage").GetAttributeValue("Link");
+                }
+                map.Add("@[PEPCRedirectPageURL]", nextpage);
+                map.Add("@[PEPCRedirectPageName]", pageName);
+                map.Add("@[PEPCFormTeaserText]", siteControl.Element("PEPCFormTeaserText").Value);
+                map.Add("@[PEPCFormSubmitText]", siteControl.Element("PEPCFormSubmitText").Value);
+                var contact = siteControl.Element("ContactComponent", "ContactUsComponent");
+                if (contact != null)
+                {
+                    var contactName = contact.GetElementValue("ContactName");
+                    var contactPhone = contact.GetElementValue("Phone");
+                    var contactEmail = contact.GetElementValue("Email");
+                    map.Add("@[Contact]", contactName);
+                    map.Add("@[Phone]", contactPhone);
+                    map.Add("@[Email]", contactEmail);
+                }
+
+                var legal = siteControl.Element("LegalComponent", "LegalComponent");
+                if (legal != null)
+                {
+                    var legalName = legal.GetElementValue("LegalName");
+                    var legalAddr = legal.GetElementValue("LegalAddress");
+                    var fedTaxId = legal.GetElementValue("FederalTaxIDNumber");
+                    map.Add("@[LegalName]", legalName);
+                    map.Add("@[LegalAddress]", legalAddr);
+                    map.Add("@[FedTaxIdNumber]", fedTaxId);
+                }
+                map.Add("@[Copyright]", Html.Partial("Other/Disclaimer", siteControl).ToHtmlString());
+            }
+            map.Add("@[ClientCSS]", Html.Partial("Custom/ClientCSS", Model).ToHtmlString());
+            map.Add("@[ClientJS]", Html.Partial("Custom/ClientJS", Model).ToHtmlString());
+            map.Add("@[AdditionalHeadHTML]", Html.Partial("Custom/AdditionalHeadHTML", Model).ToHtmlString());
+            map.Add("@[AdditionalBodyHTML]", Html.Partial("Editable/XHTMLField", new ViewDataDictionary(Model.Element("AdditionalInfo"))).ToHtmlString());
+            map.Add("@[ShareWidget]", Html.Partial("Other/Share", Model).ToHtmlString());
+            string coRaw = Html.Partial("Other/LinkSetField", new ViewDataDictionary(Model.XPathSelectElement("/*/CSiteControl/LinkSet[@Name='Callout']"))).ToHtmlString() +
+                Html.Partial("Other/LinkSetField", new ViewDataDictionary(Model.XPathSelectElement("/*/LinkSet[@Name='Callout']")));
+            string callout = _Functions.StringWithVariableSubstitution(coRaw, Model.Page);
+            map.Add("@[Callout]", callout);
+            map.Add("@[PageHeader]", _Functions.GetPageHeader(Model));
+            map.Add("@[PageTitle]", Model.GetElementValue("MainCopyTitle"));
+            map.Add("@[PageSubTitle]", Model.GetElementValue("MainCopySubtitle"));
+            map.Add("@[PageCopy]", Html.Partial("Editable/MainCopyBody", new ViewDataDictionary(Model.Element("MainCopyBody"))).ToHtmlString());            
+            map.Add("@[CaseStudyTitle]", Model.GetElementValue("CaseStudyTitle"));
+            string caseStudyBody = _Functions.StringWithVariableSubstitution(Model.Element("CaseStudyBody").Value, Model.Page);
+            map.Add("@[CaseStudyBody]", caseStudyBody);
+            var ebroAbsVal = Model.Element("FreeBrochureAbstract").Value;
+            var ebroBtn1Val = Model.Element("FreeBrochureButton1").Value;
+            string ebrTeaser = _Functions.StringWithVariableSubstitution(ebroAbsVal, Model);
+            map.Add("@[BrochureTeaser]", ebrTeaser);
+            map.Add("@[BrochureRequestButton]", ebroBtn1Val);
+            if (Model.Element("BrochureIcon") != null && !Model.Element("BrochureIcon").Value.IsNullOrEmpty())
+            {
+                string ebrIcon = "<div class=\"eBrochure-Icon\">" +
+                    @_Helpers.RenderImage(Model.Element("BrochureIcon"), Url).ToHtmlString() +
+                    "</div>";
+                map.Add("@[BrochureIcon]", ebrIcon);
+            }
+            else
+            {
+                map.Add("@[BrochureIcon]", "");
+            }
+            map.Add("@[eBrochureForm]", Html.Partial("Other/eBrochureForm", Model).ToHtmlString());
+            map.Add("@[Video]", Html.Partial("Other/Video", Model).ToHtmlString());
+            map.Add("@[LearnHowToFund]", Html.Partial("Other/LearnHowToFund", Model).ToHtmlString());
+            var giHTML = "";
+            if (Model.Element("GiftIllustratorComponent") != null)
+            {
+                giHTML = Html.Partial("Other/GiftIllustrator", Model.Element("GiftIllustratorComponent")).ToHtmlString();
+            }
+            map.Add("@[GiftIllustrator]", giHTML);
+            var nxtStpsTitle = "";
+            string nxtStpsCpy = _Functions.StringWithVariableSubstitution(Model.Element("NextStepsCopy").Value, Model.Page);
+            map.Add("@[NextStepsCopy]", nxtStpsCpy);
+            if (!nxtStpsCpy.IsNullOrEmpty())
+            {
+                nxtStpsTitle = Model.Element("NextStepsTitle").Value;
+            }
+            map.Add("@[NextStepsTitle]", nxtStpsTitle);
+            map.Add("@[SkipToContentAnchor]", "<a href='#skip' class='sr-only'>Skip Content</a>");
+            map.Add("@[SkipAnchor]", "<a id='skip'></a>");
+
+            //add custom link replacements
+            foreach (ICMSLinkElement link in siteControl.GetLinkItems("CustomLinkReplacement"))
+            {
+                map.Add(link.ID + ".xml", _Functions.GetLinkActionNew(link, Url));
+            }
+
+            //Substitute variables
+            foreach (var pair in map)
+            {
+                customHTML = customHTML.Replace(pair.Key, pair.Value);
+            }
+            Response.Write(customHTML);
+        }
+        else
+        {
+            Response.Write("Please upload a custom template to view the page.");
+        }
+    }
+    catch (Exception e)
+    {
+        Response.Write("An exception occured. Please try again later.");
+    <!-- @e.Message -->
+    }
+    finally
+    {
+        stopwatch.Stop();
+        //Response.Write("Page load time: " + stopwatch.Elapsed);
+    }
+}

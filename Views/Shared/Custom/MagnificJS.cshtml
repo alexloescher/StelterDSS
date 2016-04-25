@@ -1,0 +1,13 @@
+﻿@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    var page = Model;
+    if (page.IsPreview)
+    {       
+        <script type="text/javascript" src="//cdn.jsdelivr.net/jquery.magnific-popup/0.9.9/jquery.magnific-popup.min.js"></script>
+    }
+    else
+    {
+        <script type="text/javascript" src="/Scripts/jquery.magnific-popup.min.js"></script>
+    }  
+} 

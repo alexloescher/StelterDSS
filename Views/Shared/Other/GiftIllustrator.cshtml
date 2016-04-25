@@ -1,0 +1,36 @@
+﻿@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{
+    var giTitle = Model.GetElementValue("GITitle");
+    var giAbs = Model.GetElementValue("GIAbstract");
+    var giPage = Model.Element("Page", "GILink");
+    var siteControl = Model.Page.Element("CSiteControl");
+    var orgId = "";
+    if (siteControl != null)
+    {
+        orgId = siteControl.GetElementValue("OrgID");
+    }
+    var giUrl = "";
+    if (giPage != null)
+    {
+        giUrl = _Functions.GetLinkURL(giPage, Url) + "?orgId=" + orgId;
+        giAbs = giAbs.Replace("@[GIUrl]", giUrl);
+        string learnHowToFund = Html.Partial("Other/LearnHowToFund", Model.Page).ToString();
+        giAbs = giAbs.Replace("@[learn_how_to_fund]", learnHowToFund);
+    }
+
+    String img = Model.GetElementValue("Image");
+    String imgPlacement = Model.GetElementValue("ImagePlacement");
+    <div class="GIfeature clearfix @(imgPlacement == "Background" ? "stl-gi-background" : "")" style="@(imgPlacement == "Background" ? "background-image: url('" + _Functions.GetImagePath(img, Url, Model) + "');background-repeat: no-repeat;" : "")">
+        @{
+            if (!String.IsNullOrWhiteSpace(img) && (imgPlacement == "Left" || imgPlacement == "Right"))
+            {
+                <a href="@giUrl" class="lightbox">@_Helpers.RenderImage(Model.Element("Image"), Url, "stl-fl-" + imgPlacement.ToLower())
+                </a>   
+            }
+            }
+        <h3>@giTitle</h3>
+        @Html.Raw(giAbs)
+        <div class="clearfix"></div>
+    </div>
+}

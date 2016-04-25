@@ -1,0 +1,12 @@
+@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{
+    var freeFormElem = Model.Element("FreeFormContent");
+    if(freeFormElem != null)
+    {
+        var freeFormVal = freeFormElem.Value;
+        <div class="free-form-banner full-banner">
+            @Html.Raw(freeFormVal)
+        </div>
+    }
+}

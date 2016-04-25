@@ -1,0 +1,68 @@
+﻿@model Ingeniux.Runtime.ICMSTaxonomyNavigationElement
+@using Ingeniux.Runtime
+@{
+    string subText = Convert.ToString(ViewData["PathPrompter"]);
+
+    var taxNavElement = Model;
+    if (taxNavElement != null)
+    {
+        // Retrieve categories from site control (modularize this code later)
+        List<string> siteGiftTypeExclusions = new List<string>();
+        var siteControl = Model.Page.Element("CSiteControl");
+        if (siteControl != null)
+        {
+            ICMSTaxonomyNavigationElement gtExclusions = (ICMSTaxonomyNavigationElement)siteControl.Element("TaxonomyNavigation", "GiftTypeExclusions");
+            if (gtExclusions != null)
+            {
+                siteGiftTypeExclusions = gtExclusions.AllCategories.Select(gt => gt.ID).ToList();
+            }
+        }
+
+        IEnumerable<ICMSNavigatingCategory> navCats = taxNavElement.AllCategories;
+        navCats = navCats.OrderBy(cat => cat.Description);
+        foreach (ICMSNavigatingCategory cat in navCats)
+        {
+            // Filter for gift type exclusions
+            IEnumerable<ICMSLinkElement> featuredPages = cat.Pages.Where(item => item.CategoryIds.Intersect(siteGiftTypeExclusions).Any() == false);
+
+            //var nPages = cat.PagesCount;
+            var nPages = featuredPages.Count();
+            string overlayTitle = cat.Name;
+            string overlaySubtext = "";
+            string externalID = cat.ExternalID;
+            if (!subText.IsNullOrEmpty())
+            {
+                overlaySubtext = subText;
+            }
+            if (nPages > 1)
+            {
+                <div class="middle-results" id="@cat.ID" tabindex="-1" role="dialog">
+                    <div>
+                        <div>
+                            <h4>@cat.Name</h4>
+                            @if (!overlaySubtext.IsNullOrEmpty())
+                            {
+                                <p class="stl_JourneySubtext">@overlaySubtext</p>
+                            }
+                        </div>
+                        <div>
+                            <ul>
+                            @foreach (ICMSLinkElement page in featuredPages)
+                            {
+                                if (page.GetAttributeValue("NavigationTitle").IsNullOrEmpty())
+                                {
+                                    <li><a href="@_Functions.GetLinkActionNew(page, Url)" onclick="s.linkTrackVars='events,eVar41'; s.linkTrackEvents='event11'; s.events='event11'; s.eVar41='@cat.Name|@page.Name'; s.tl(this,'o','Site Tool');">@page.Name</a></li>
+                                }
+                                else
+                                {
+                                    <li><a href="@_Functions.GetLinkActionNew(page, Url)" onclick="s.linkTrackVars='events,eVar41'; s.linkTrackEvents='event11'; s.events='event11'; s.eVar41='@cat.Name|@page.GetAttributeValue("NavigationTitle")'; s.tl(this,'o','Site Tool');">@page.GetAttributeValue("NavigationTitle")</a></li>
+                                }
+                            }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    }
+}

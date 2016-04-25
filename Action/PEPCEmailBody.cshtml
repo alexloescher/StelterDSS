@@ -1,0 +1,135 @@
+﻿@{
+    var fname = PageData[0] as string;
+    var lname = PageData[1] as string;
+    var email = PageData[2] as string;
+    var pageName = PageData[3] as string;
+    var nextPage = PageData[4] as string;
+    if(nextPage.IndexOf("http") < 0)
+    {
+        if (nextPage[0] == '/') {
+            nextPage = "http://" + Request.Url.Host + nextPage;
+        } else {
+            nextPage = "http://" + Request.Url.Host + "/" + nextPage;
+        }
+    }
+}
+<html><HEAD><META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW"></HEAD><img src="http://click.email-pln.org/open.aspx?ffcb10-febc1d7277620c75-fe2311777762057c731d77-fe9c13707564077574-ff6112707d-fe6413767766007c7410-ff2f16727d60" width="1" height="1">
+<style>
+body {
+	background-color: #CCCCCC;
+	font-family: Arial, Helvetica, sans-serif;
+	color: #000000;
+	font-size: 11px;
+	line-height: 16px;
+	}
+	
+
+#border {
+	border: 1px solid #000000;
+}
+
+a:link {font-family: Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	color: #98002D;
+	line-height: 15px;
+	font-style: none;
+	font-weight: normal;
+	text-decoration: underline;
+	}
+	
+a:active {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	color: #98002D;
+	line-height: 15px;
+	font-style: none;d
+	font-weight: normal;
+	text-decoration: underline;
+	}	
+	
+a:visited {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	color: #98002D;
+	line-height: 15px;
+	font-style: none;
+	font-weight: normal;
+	text-decoration: underline;
+	}	
+
+a:hover {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	color: #98002D;
+	line-height: 15px;
+	font-style: none;
+	font-weight: normal;
+	text-decoration: underline;
+	}
+
+
+</style>
+<body>
+<table width="600" border="0" align="center" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF" id="border">
+       
+  <tr>
+    <td colspan="3" ><a href="http://www.stelter.com"><img src="http://image.email-pln.org/lib/fe9c13707564077574/m/2/stelterheader.personalphil.jpg" alt="The Stelter Company" width="600" height="71" border="0"></a></td>
+  </tr>
+ 
+<tr>
+<td>
+<table width="600" border="0" cellspacing="0" cellpadding="15">
+<tr>
+<td style="font-family:Arial, Helvetica, sans-serif; font-size:12px; line-height:16px;">
+<p class="small">
+We have received and fulfilled a PEPC request from your gift planning website. Below is the contact information given and the Personal estate planning kit requested.
+<br/>
+First Name: @fname
+<br/>
+Last Name: @lname
+<br/>
+Email: @email
+<br/>
+<br/>
+  Visitor requested these personal estate planning kits:
+  <br/>
+  <table><tr><td><a class="alink" href="@nextPage">@pageName</a><br/></td></tr></table>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+
+   
+  <tr>
+    <td ><img src="http://image.email-pln.org/lib/fe9c13707564077574/m/1/stelter_line.jpg" width="600" height="7">
+    </td>
+    </tr>
+   </tr>
+    <tr bgcolor="#ffffff">
+    <td style="padding:10px;">
+  <table width="250" border="0" cellspacing="0" cellpadding="0" align="left">
+                  <tr>
+                    <td style="padding-right:20px;"><span style="font-family:Arial, Helvetica, sans-serif; font-size:11px; color:#666666; font-weight:bold;">Get social with us</span></td>
+                    <td width="18" style="padding-right:10px;"><a href="http://www.facebook.com/TheStelterCompany"  alias="Facebook" title="Facebook"><img src="http://image.email-pln.org/lib/fe9c13707564077574/m/1/0512facebook.jpg" border="0" /></a></td>
+                    <td width="18" style="padding-right:10px;"><a href="http://www.linkedin.com/company/the-stelter-company"  alias="LinkedIn" title="LinkedIn"> <img src="http://image.email-pln.org/lib/fe9c13707564077574/m/1/0512linked.jpg" border="0" /></a></td>
+                    <td width="18" style="padding-right:10px;"><a href="http://twitter.com/StelterCompany" alias="Twitter" title="Twitter"> <img src="http://image.email-pln.org/lib/fe9c13707564077574/m/1/0512twitter.jpg"  border="0" /></a></td>
+      <td width="18" style="padding-right:10px;"><a href="http://view.email-pln.org/ftaf.aspx?j=febc1d7277620c75&m=fe9c13707564077574&ls=fe2311777762057c731d77&jb=ff2f16727d60" title="Forward to a Friend" alias="Forward to a Friend"><img src="http://image.email-pln.org/lib/fe9c13707564077574/m/1/FwdOpt2.jpg"  border="0"></a></td>              
+                    
+                  </tr>
+                </table><br><br>
+                <span style="font-family:Arial, Helvetica, sans-serif; color: #666; font-size:11px; "><b>The Stelter Company</b><br>10435 New York Ave.
+    <br>
+ Des Moines, IA 50322
+ </span>
+    </td>
+  </tr>
+</table>
+
+</div>
+</td>
+</tr>
+</table>
+
+</body>
+</html>

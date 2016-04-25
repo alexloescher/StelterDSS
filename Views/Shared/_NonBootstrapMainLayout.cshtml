@@ -1,0 +1,65 @@
+﻿@model CMSPageRequest
+@using Ingeniux.Runtime
+
+@{
+    Layout = "~/Views/Shared/_NonBootstrapLayout.cshtml";
+
+    ICMSElement siteControl = Model.Element("CSiteControl");
+    String layoutGrid = siteControl != null ? siteControl.GetElementValue(Model.RootElementName.Replace("Page", "") + "Grid") : "";
+    layoutGrid = layoutGrid != "" ? layoutGrid : "3-6-3";
+
+    layoutGrid = layoutGrid.StartsWith("9") || layoutGrid.StartsWith("8") || layoutGrid.StartsWith("12") ? "0-" + layoutGrid : layoutGrid;
+    layoutGrid = layoutGrid.EndsWith("9") || layoutGrid.EndsWith("8") || layoutGrid.EndsWith("12") ? layoutGrid + "-0" : layoutGrid;
+    if (siteControl != null && siteControl.GetElementValue("checkHeader") != "true")
+    {
+    @Html.Raw(siteControl.GetElementValue("TextHeader"))
+    }
+    <div id="stl-page">
+        @{
+            if (siteControl != null && siteControl.GetElementValue("checkHeader") != "true")
+            {
+            <div class="stl-header">
+                <div class="stl-quicklinks">
+                    @Html.Partial("PageLayout/Quicklinks", siteControl)
+                </div>
+                @Html.Partial("PageLayout/Header", siteControl)
+            </div>
+            }
+        }
+        <!-- #header -->
+        <div id="stl-cms">
+            <div class="stl-container @(siteControl != null ? siteControl.GetElementValue("AdditionalContainerClasses") : "")" @Html.Raw(siteControl != null && siteControl.GetElementValue("ContainerId") != "" ? "id=\"" + siteControl.GetElementValue("ContainerId") + "\"" : "")>
+                @{
+                    if (siteControl != null && siteControl.GetElementValue("checkHeader") == "true")
+                    {
+                    <div class="stl-header">
+                        <div class="stl-quicklinks">
+                            @Html.Partial("PageLayout/Quicklinks", siteControl)
+                        </div>
+                        @Html.Partial("PageLayout/Header", siteControl)
+                    </div>
+                    @Html.Raw(siteControl.GetElementValue("TextHeader"))
+                    }
+                    <div class="stl-colwrap">
+                        @RenderBody()
+                    </div>
+                    if (siteControl != null && siteControl.GetElementValue("checkFooter") == "true")
+                    {
+                    <div class="stl-footer">
+                        @Html.Partial("PageLayout/Footer", siteControl)
+                    </div>
+                    @Html.Raw(siteControl.GetElementValue("TextFooter"))
+                    }
+                }
+            </div>
+        </div>
+    </div>
+    <!-- #main -->
+    if (siteControl != null && siteControl.GetElementValue("checkFooter") != "true")
+    {
+    <div class="stl-footer">
+        @Html.Partial("PageLayout/Footer", siteControl)
+    </div>
+    @Html.Raw(siteControl.GetElementValue("TextFooter"))
+    }
+}

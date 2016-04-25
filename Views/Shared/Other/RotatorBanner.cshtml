@@ -1,0 +1,78 @@
+﻿@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{
+    var bannerComps = Model.Elements("BannerComponent");
+    if(bannerComps.Count() > 0)
+    {
+        <div id="this-carousel-id" class="carousel slide rotator-banner full-banner"><!-- class of slide for animation -->
+           <ol class="carousel-indicators">
+               @{
+                    var counter = 0;
+                    foreach (ICMSElement bannerComp in bannerComps)
+                    {
+                        var active = "";
+                        if (bannerComp.GetAttributeValue("ID") == bannerComps.First().GetAttributeValue("ID"))
+                        {
+                            active = "active";
+                        }
+                        else
+                        {
+                            active = "";
+                        }
+                        <li data-target="#this-carousel-id" data-slide-to="@counter" class="@active"></li>
+                        counter++;
+                    }   
+               }
+          </ol>
+          <div class="carousel-inner">
+              @{
+                foreach (ICMSElement bannerComp in bannerComps)
+                {
+                    var imgElem = bannerComp.Element("BannerImage");
+                    if(imgElem != null)
+                    {
+                        var txtOverlay = bannerComp.Element("TextOverlay");
+                        var txtOverlayVal = "";
+                        if(txtOverlay != null)
+                        {
+                            txtOverlayVal = txtOverlay.Value;   
+                        }
+                        var imgPage = bannerComp.Element("Page", "Link");
+                        var imgUrl = "";
+                        if(imgPage != null)
+                        {
+                            imgUrl = _Functions.GetLinkURL(imgPage, Url);
+                        }
+                        var active = "";
+                        if (bannerComp.GetAttributeValue("ID") == bannerComps.First().GetAttributeValue("ID"))
+                        {
+                            active = "active";
+                        }
+                        else
+                        {
+                            active = "";
+                        }
+                        <div class="item @active">
+                            <a href="@imgUrl">
+                                @Html.Partial("Editable/ImageField", imgElem)
+                                <div class="carousel-caption">
+                                    @Html.Raw(txtOverlayVal)
+                                </div>            
+                            </a>
+                        </div>
+                    }
+                }   
+              }
+          </div><!-- /.carousel-inner -->
+          <!--  Next and Previous controls below
+                href values must reference the id for this carousel -->
+            <!-- Controls -->
+              <a class="left carousel-control" href="#this-carousel-id" data-slide="prev">
+                <span class="glyphicon glyphicon-chevron-left"></span>
+              </a>
+              <a class="right carousel-control" href="#this-carousel-id" data-slide="next">
+                <span class="glyphicon glyphicon-chevron-right"></span>
+              </a>
+        </div><!-- /.carousel -->
+    }
+}

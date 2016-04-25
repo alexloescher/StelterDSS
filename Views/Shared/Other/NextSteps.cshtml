@@ -1,0 +1,52 @@
+﻿@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    var title = Model.Element("NextStepsTitle");
+    var copy = Model.Element("NextStepsCopy");
+    if (copy == null || copy.Value.IsNullOrEmpty())
+    {
+        return;
+    }
+
+    string finalCopy = copy.Value;
+    ICMSElement siteControl = Model.Element("CSiteControl");
+    if (siteControl != null) {
+        var contact = siteControl.Element("ContactComponent", "ContactUsComponent");
+        if (contact != null)
+        {
+            var contactEmail = "<a href=\"mailto:" +
+                contact.GetElementValue("Email") +
+                "\">" +
+                contact.GetElementValue("Email") +
+                "</a>";
+
+            finalCopy = finalCopy.Replace("@[Email]", @contactEmail.ToString());
+        }
+    }
+
+    finalCopy = _Functions.StringWithVariableSubstitution(finalCopy, Model.Page);
+    if (finalCopy != null)
+    {
+        if (title != null && title.Value.Length > 0)
+        {
+            String titlePlacement = siteControl != null ? siteControl.GetElementValue("NextStepsTitlePlacement") : "";
+            if (titlePlacement != "Full Width")
+            {
+    <h3 class="next-steps-head hidden-xs visible-md visible-lg">@title.Value</h3>
+    <h3 class="visible-xs hidden-lg">
+        <a data-toggle="collapse" href="#next-steps">@title.Value
+            @{
+                bool isNonBootstrapMobile = _Functions.isMobile(Model) && siteControl != null && siteControl.GetElementValue("DisplayMode") == "Adaptive";
+                if (!isNonBootstrapMobile)
+                {
+                    //hide the glyphicons for non-bootstrap mobile sites
+                <span class="glyphicon glyphicon-plus-sign pull-right"></span>   
+                }
+            }
+        </a>
+    </h3>
+            }
+        }
+    @Html.Raw(finalCopy);
+    }
+}

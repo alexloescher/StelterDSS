@@ -1,0 +1,174 @@
+@model CMSPageRequest
+@using Ingeniux.Runtime
+@using System.Text
+@{
+    Layout = "~/Views/Shared/_NonBootstrapMainLayout.cshtml";
+
+    ICMSElement siteControl = Model.Element("CSiteControl");
+    String layoutGrid = siteControl != null ? siteControl.GetElementValue(Model.RootElementName.Replace("Page", "") + "Grid") : "";
+    layoutGrid = layoutGrid != "" ? layoutGrid : "3-6-3";
+
+    layoutGrid = layoutGrid.StartsWith("9") || layoutGrid.StartsWith("8") || layoutGrid.StartsWith("12") ? "0-" + layoutGrid : layoutGrid;
+    layoutGrid = layoutGrid.EndsWith("9") || layoutGrid.EndsWith("8") || layoutGrid.EndsWith("12") ? layoutGrid + "-0" : layoutGrid;
+
+    String breadCrumbPlacement = siteControl != null ? siteControl.GetElementValue("BreadcrumbPlacement") : "Full";
+    String sharePlacement = siteControl != null ? siteControl.GetElementValue("SharePlacement") : "Full";
+    String pageHeaderPlacement = siteControl != null ? siteControl.GetElementValue("PageHeaderPlacement") : "Full";
+    String titlePlacement = siteControl != null ? siteControl.GetElementValue("TitlePlacement") : "Main";
+
+    ICMSElement banner = _Functions.GetBannerComponent(Model);
+    String bannerLoc = banner != null ? banner.GetElementValue("Columns") : "";
+    StringBuilder interiorHTML = new StringBuilder();
+    <a id="skip"></a>
+    @* Bread Crumb *@
+    if (siteControl != null && (breadCrumbPlacement == "" || breadCrumbPlacement == "Full" || sharePlacement == "" || sharePlacement == "Full"))
+    {
+        <div class="stl-col stl-w-12 stl-breadcrumbs">
+            @{
+        if (breadCrumbPlacement == "" || breadCrumbPlacement == "Full")
+        {
+            Html.RenderPartial("Other/Breadcrumb", siteControl);
+        }
+        if (sharePlacement == "" || sharePlacement == "Full")
+        {
+            <div class="stl-share-wrapper">
+                @Html.Partial("Other/Share", Model)
+            </div>
+        }
+            }
+        </div>
+    }
+
+    if (_Functions.GetPageHeader(Model) != "" && (pageHeaderPlacement == "Full" || pageHeaderPlacement == ""))
+    {
+        <p class="stl-page-header" @_Helpers.RenderICEAttribute(Model.Element("Title"))>@_Functions.GetPageHeader(Model)</p>
+    }
+    if (siteControl != null && titlePlacement == "Full")
+    {
+        if (Model.Element("MainCopyTitle") != null)
+        {
+            Html.RenderPartial("Editable/MainCopyTitle", Model.Element("MainCopyTitle"));
+        }
+        else if (Model.Element("ClientMissionTitle") != null)
+        {
+            Html.RenderPartial("Editable/ClientMissionTitle", Model.Element("ClientMissionTitle"));
+        }
+    }
+
+    if (bannerLoc == "Full")
+    {
+        //Html.RenderPartial("Components/BannerComponent", banner);
+        interiorHTML.Append(Html.Partial("Components/BannerComponent", banner));
+
+        // Embedded URLs
+        if (!siteControl.Page.IsPreview && _Functions.UseUrlRewrites())
+        {
+            ICMSElement homeUrl = siteControl.Element("Page", "HomeLink");
+            if (homeUrl != null && !homeUrl.GetAttributeValue("Link").IsNullOrEmpty())
+            {
+                var siteName = "/" + homeUrl.GetAttributeValue("Link").ToLower() + "/";
+                interiorHTML = interiorHTML.Replace(siteName, "/");
+            }
+        }
+        
+        @Html.Raw(interiorHTML)
+    }
+
+    string[] layoutCols = layoutGrid.Split(new char[] { '-' });
+
+    if (layoutCols.Length >= 1 && layoutCols[0] != "0")
+    {
+        <div class="stl-col @("stl-w-" + (!layoutCols[0].StartsWith("1") ? "0" : "") + layoutCols[0]) stl-left">
+            @{
+        if (_Functions.GetPageHeader(Model) != "" && pageHeaderPlacement == "Left")
+        {
+            <p class="stl-page-header" @_Helpers.RenderICEAttribute(Model.Element("Title"))>@_Functions.GetPageHeader(Model)</p>
+        }
+        if (Model.GetElementValue("LeftColumnDisplay").EqualsIgnoreCase("Inherit") || Model.GetElementValue("LeftColumnDisplay").EqualsIgnoreCase("Append"))
+        {
+            Html.RenderPartial("Other/SiteControlLeftNav", Model);
+        }
+        if (Model.GetElementValue("LeftColumnDisplay").EqualsIgnoreCase("Replace") || Model.GetElementValue("LeftColumnDisplay").EqualsIgnoreCase("Append"))
+        {
+            Html.RenderPartial("Other/PageLeftNav", Model);
+        }
+            }
+        </div>
+    }
+    if (layoutCols.Length >= 2)
+    {
+        <div class="stl-col @("stl-w-" + (!layoutCols[1].StartsWith("1") ? "0" : "") + layoutCols[1]) stl-center sub-middle-section">
+            @{
+        if (bannerLoc == "Main")
+        {
+            //Html.RenderPartial("Components/BannerComponent", banner);
+            interiorHTML.Append(Html.Partial("Components/BannerComponent", banner));
+
+            // Embedded URLs
+            if (!siteControl.Page.IsPreview && _Functions.UseUrlRewrites())
+            {
+                ICMSElement homeUrl = siteControl.Element("Page", "HomeLink");
+                if (homeUrl != null && !homeUrl.GetAttributeValue("Link").IsNullOrEmpty())
+                {
+                    var siteName = "/" + homeUrl.GetAttributeValue("Link").ToLower() + "/";
+                    interiorHTML = interiorHTML.Replace(siteName, "/");
+                }
+            }
+
+            @Html.Raw(interiorHTML)
+        }
+
+        if (siteControl != null && (breadCrumbPlacement == "Main" || sharePlacement == "Main"))
+        {
+            <div class="stl-col stl-w-12 stl-breadcrumbs">
+                @{
+            if (breadCrumbPlacement == "Main")
+            {
+                Html.RenderPartial("Other/Breadcrumb", siteControl);
+            }
+            if (sharePlacement == "Main")
+            {
+                <div class="stl-share-wrapper">
+                    @Html.Partial("Other/Share", Model)
+                </div>
+            }
+                }
+            </div>
+        }
+        if (_Functions.GetPageHeader(Model) != "" && pageHeaderPlacement == "Main")
+        {
+            <p class="stl-page-header" @_Helpers.RenderICEAttribute(Model.Element("Title"))>@_Functions.GetPageHeader(Model)</p>
+        }
+        @RenderBody()
+
+        if (siteControl != null && siteControl.Element("CopyrightComponent") != null)
+        {
+            <div class="stl-copyright">
+                @{
+            Html.RenderPartial("Other/Disclaimer", siteControl);
+                }
+            </div>
+        }
+            }
+        </div>
+    }
+    if (layoutCols.Length == 3 && layoutCols[2] != "0")
+    {
+        <div class="stl-col @("stl-w-" + (!layoutCols[2].StartsWith("1") ? "0" : "") + layoutCols[2]) stl-right">
+            @{
+        if (_Functions.GetPageHeader(Model) != "" && pageHeaderPlacement == "Right")
+        {
+            <p class="stl-page-header" @_Helpers.RenderICEAttribute(Model.Element("Title"))>@_Functions.GetPageHeader(Model)</p>
+        }
+        if (Model.GetElementValue("RightColumnDisplay").EqualsIgnoreCase("Inherit") || Model.GetElementValue("RightColumnDisplay").EqualsIgnoreCase("Append"))
+        {
+            Html.RenderPartial("Other/SiteControlRightNav", Model);
+        }
+        if (Model.GetElementValue("RightColumnDisplay").EqualsIgnoreCase("Replace") || Model.GetElementValue("RightColumnDisplay").EqualsIgnoreCase("Append"))
+        {
+            Html.RenderPartial("Other/PageRightNav", Model);
+        }
+            }
+        </div>
+    }
+}

@@ -1,0 +1,12 @@
+﻿@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{	
+	var socialContent = Model;
+    if (!socialContent.Value.IsNullOrEmpty())
+	{
+        <div class="socialhub text-center stl_socialContent">
+		    @Html.Raw(socialContent.Value)
+        </div>
+        <div class="vertical-nav-divider hidden-sm"></div>
+    }
+}

@@ -1,0 +1,91 @@
+﻿@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    var tier = Session["tier"];
+    var ebrListingTitle = Model.Element("SiteBrochureListingTitle");
+    var lifeStyleListingTitle = Model.Element("LifestyleBrochureListingTitle");
+    var siteControl = Model.Element("CSiteControl");
+    if (siteControl != null)
+    {
+        if (tier == null || tier.ToString().IsNullOrEmpty())
+        {
+            tier = "Silver"; // fall back to lowest tier
+
+            IEnumerable<ICMSCategory> categories = (siteControl as ICMSComponentRequest).Categories;
+            foreach (var cat in categories)
+            {
+                if (cat.Path.StartsWith("Tier"))
+                {
+                    if (cat.Name == "Platinum")
+                    {
+                        tier = "Platinum";
+                    }
+                    else if (cat.Name == "Gold")
+                    {
+                        tier = "Gold";
+                    }
+                    break;
+                }
+            }
+        }
+
+        var siteTreeNav = Model.GetNavigation("SiteTree");
+        if (siteTreeNav != null)
+        {
+   
+            <div id="stl-toolkit-site-brochure-section">
+                @if (ebrListingTitle != null && !ebrListingTitle.Value.IsNullOrEmpty())
+                {
+                    <div class="stl-toolkit-ebr-listing-title">@ebrListingTitle.Value</div>
+                }
+                <ul id="stl-toolkit-ebr-list">
+                @foreach (ICMSLinkElement link in siteTreeNav.GetLinkItems())
+                {
+                    ViewDataDictionary siteDict = new ViewDataDictionary { { "CustSiteControl", siteControl }, { "CustTier", tier } };
+                    @Html.Partial("Other/LinkElement", link, siteDict)
+                }
+                </ul>
+            </div>
+        }
+
+        if (tier == "Gold" || tier == "Platinum") {
+            
+            if (Model.Element("UseCustomLifestyleBrochures") != null && Model.GetElementValue("UseCustomLifestyleBrochures").Equals("true"))
+            {
+                // Render custom lifestyle brochure links
+                <div id="stl-toolkit-lifestyle-brochure-section">
+                    @if (lifeStyleListingTitle != null && !lifeStyleListingTitle.Value.IsNullOrEmpty())
+                    {
+                        <div class="stl-toolkit-lifestyle-listing-title">@lifeStyleListingTitle.Value</div>
+                    }
+                    <ul id="stl-toolkit-lifestyle-list">
+                    @foreach (ICMSLinkElement link in Model.GetLinkItems("CustomLSB"))
+                    {
+                        <li><a href="@link.URL" target="_blank">@link.LinkName</a></li>
+                    }
+                    </ul>
+                </div>
+            }
+            else
+            {
+                var lifeStyleNav = Model.GetNavigation("LifestyleBrochures");
+                if (lifeStyleNav != null)
+                {
+                    <div id="stl-toolkit-lifestyle-brochure-section">
+                        @if (lifeStyleListingTitle != null && !lifeStyleListingTitle.Value.IsNullOrEmpty())
+                        {
+                            <div class="stl-toolkit-lifestyle-listing-title">@lifeStyleListingTitle.Value</div>
+                        }
+                        <ul id="stl-toolkit-lifestyle-list">
+                        @foreach (ICMSLinkElement link in lifeStyleNav.GetLinkItems())
+                        {
+                            ViewDataDictionary siteCtrl = new ViewDataDictionary { { "CustSiteControl", siteControl } };
+                            @Html.Partial("Other/LinkElement", link, siteCtrl)
+                        }
+                        </ul>
+                    </div>
+                }
+            }
+        }
+    }
+}

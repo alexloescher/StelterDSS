@@ -1,0 +1,12 @@
+﻿@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{	
+	var textField1 = Model;
+    if (!textField1.Value.IsNullOrEmpty())
+	{
+		<h3 @_Helpers.RenderICEAttribute(textField1) class="hidden-xs visible-md visible-lg">@textField1.Value</h3>
+        <h3 class="visible-xs hidden-lg">
+			<a class="collapsed" data-toggle="collapse" href="#stl_case-study">@textField1.Value <span class="glyphicon glyphicon-plus-sign pull-right"></span></a>
+		</h3>
+	}
+}

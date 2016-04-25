@@ -1,0 +1,9 @@
+﻿@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{	
+	var title = Model;
+	if (title != null)
+	{
+		<p class="stl-page-header" @_Helpers.RenderICEAttribute(title)>@title.Value</p>
+	}
+}

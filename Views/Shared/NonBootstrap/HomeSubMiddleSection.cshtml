@@ -1,0 +1,60 @@
+@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    var siteControl = Model.Element("CSiteControl");
+    <div class="stl-mission-section">
+        @{
+            if (siteControl == null || siteControl.GetElementValue("TitlePlacement") == "" || siteControl.GetElementValue("TitlePlacement") == "Main")
+            {
+                Html.RenderPartial("Editable/ClientMissionTitle", Model.Element("ClientMissionTitle"));
+            }
+        }
+        <div class="stl-row">
+            @* ----------- Whats new in main copy ------------------ *@
+            @{
+                if (Model.GetElementValue("IncludeinMainCopy") == "true")
+                {
+@* What's New Pullout *@
+                <div class="stl-whats-new">
+                    @Html.Partial("Other/Whatsnew", Model)
+                </div>
+                }
+                @Html.Partial("Editable/ClientMissionBody", new ViewDataDictionary(Model.Element("ClientMissionBody")))
+            }
+            <div class="clear"></div>
+        </div>
+    </div>
+    @Html.Partial("NonBootstrap/JourneyComponentWrapper")
+@* ------------------------ Next Steps ----------------------- *@
+    if (Model.Element("GettingStartedIntro") != null)
+    {
+        String img = Model.GetElementValue("GettingStartedImage");
+        String placement = Model.GetElementValue("GettingStartedImagePlacement");
+    <div class="stl-not-sure not-sure">
+        @{
+        if (!String.IsNullOrWhiteSpace(img) && placement == "Background")
+        {
+            <div class="stl-border-box stl-imgbg" style="background-image:url('@_Functions.GetImagePath(img, Url, Model)'); min-height: @(Model.Element("GettingStartedImage").GetAttributeValue("Height") + "px")">
+                <div class="stl-text-overlay stl-left">
+                    @Html.Partial("Editable/XHTMLField", new ViewDataDictionary(Model.Element("GettingStartedIntro")))
+                </div>
+            </div>
+        }
+        else
+        {
+            if (!String.IsNullOrWhiteSpace(img) && placement != "None")
+            {
+            <img class="@(placement == "Left" ? "stl-fl-left" : "stl-fl-right")" src="@_Functions.GetImagePath(img, Url, Model)" alt="" />
+            }
+            Html.RenderPartial("Editable/XHTMLField", new ViewDataDictionary(Model.Element("GettingStartedIntro")));
+        }
+        }
+    </div>
+    }
+@* ----------- Whats new in getting started ------------------ *@
+    if (Model.Element("IncludeinGettingStarted").Value == "true")
+    {
+@* What's New Pullout *@
+        Html.RenderPartial("Other/Whatsnew", Model);
+    }
+}

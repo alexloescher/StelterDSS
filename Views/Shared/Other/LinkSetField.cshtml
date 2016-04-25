@@ -1,0 +1,31 @@
+﻿@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{	
+	var linkSetField1 = Model;
+    if (linkSetField1 != null)
+	{
+        int item_cnt = 0;
+        foreach(ICMSLinkElement link in Model.GetLinkItems()){
+            if (item_cnt > 0) {
+                <div class="vertical-nav-divider hidden-sm"></div>
+            }
+            <div class="stl_Callout text-center">
+                <a href="@_Functions.GetLinkURL(link, Url)" class="callout-img stl_CalloutImage">
+                    @_Helpers.RenderImage(link.GetAttributeValue("PageImage"), Url, link.GetAttributeValue("Title"), Model)
+                </a>
+                @if (link.GetAttributeValue("NavigationTitle").IsNullOrEmpty()) {
+                    <a class="stl_CalloutLink" href="@_Functions.GetLinkURL(link, Url)">@link.GetAttributeValue("Title")</a>
+                }
+                else
+                {
+                    <a class="stl_CalloutLink" href="@_Functions.GetLinkURL(link, Url)">@link.GetAttributeValue("NavigationTitle")</a>
+                }
+                <div class="callout-abstract stl_CalloutAbstract">@Html.Raw(link.GetAttributeValue("Abstract"))</div>
+            </div>
+            item_cnt++;
+        }
+        if (item_cnt > 0) {
+            <div class="vertical-nav-divider hidden-sm"></div>
+        }
+	}
+}

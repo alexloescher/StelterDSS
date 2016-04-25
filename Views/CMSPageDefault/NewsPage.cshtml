@@ -1,0 +1,22 @@
+@model Ingeniux.Runtime.CMSPageRequest
+@{
+    ViewBag.Title = Model.Element("Title").ToNullHelper().Propagate<string>(ele => ele.Content.Value).Return("PG Home");
+    Layout = "~/Views/Shared/_MainLayout.cshtml";
+}
+@using Ingeniux.Runtime
+
+@{
+    var articleID = Request.QueryString["article"];
+    if (articleID != null)
+    {
+        ICMSPage eBrComponent = Model.Factory.GetPage(Request, articleID) as ICMSPage;
+        if (eBrComponent != null)
+        {
+            ICMSElement copy = eBrComponent.Element("ArticleCopy");
+            if (copy != null)
+            {
+                @Html.Raw(copy.Value)
+            }
+        }
+    }
+}

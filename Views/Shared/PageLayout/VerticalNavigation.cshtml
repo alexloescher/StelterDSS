@@ -1,0 +1,79 @@
+﻿@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{
+    ICMSNavigationElement vertNav = Model.GetNavigation("VerticalNavigation");
+    ICMSElement home = Model.Element("Page", "HomeLink");
+    var plannedGivingHomeLnk = _Functions.GetLinkURL(home, Url);
+
+    // Retrieve categories from site control (modularize this code later)
+    List<string> siteGiftTypeExclusions = new List<string>();
+    var siteControl = Model;
+    if (siteControl != null) {
+        ICMSTaxonomyNavigationElement gtExclusions = (ICMSTaxonomyNavigationElement)siteControl.Element("TaxonomyNavigation", "GiftTypeExclusions");
+        if (gtExclusions != null) {
+            siteGiftTypeExclusions = gtExclusions.AllCategories.Select(gt => gt.ID).ToList();
+        }
+    }
+	<ul id="rightnav" class="rtnav">
+    @foreach (ICMSElement lnk in Model.Elements("Page", "VerticalNavigationLink"))
+    {
+        var linkTitle = lnk.GetAttributeValue("Link");
+        var linkURL = _Functions.GetLinkURL(lnk, Url);
+        var target = lnk.GetAttributeValue("Target");
+        if (linkURL == "<#vertical_navigation>")
+        {
+            string lastElementID = "";
+            ICMSLinkElement lastElement = vertNav.GetLinkItems("", true).LastOrDefault(s => s.Schema == "VerticalNavigationGroup");
+            if (lastElement != null)
+            {
+                lastElementID = lastElement.GetAttributeValue("ID");
+            }
+
+            foreach (ICMSLinkElement link in vertNav.GetLinkItems("", true))
+            {
+                if (link.Schema == "VerticalNavigationGroup")
+                {
+                    IEnumerable<ICMSLinkElement> filteredSubLinks = link.GetLinkItems().Where(item => item.GetAttributeValue("CategoryIds").Split('|').ToList().Intersect(siteGiftTypeExclusions).Any() == false);
+                    if (filteredSubLinks.Count() > 0)
+                    {
+                        <li class="onTrail currentPage">
+                        @if (link.GetAttributeValue("ShowGroupName").Equals("true"))
+                        {
+                            <a>@link.Name</a>
+                        }
+                            <ul>
+                                @foreach (ICMSLinkElement sublink in filteredSubLinks)
+                                {
+                                    <li><a href="@_Functions.GetLinkActionNew(sublink, Url)">@sublink.Name</a></li>
+                                }
+                            </ul>
+                        </li>
+                    }
+                    if (lastElementID.Equals(link.GetAttributeValue("ID")))
+                    {
+                        <li style="display:none;" class="navGroupDivider"></li>
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (plannedGivingHomeLnk == linkURL)
+            {
+                <li class="sectionhome currentPage">
+					<div>
+                        <a class="stlHomelink" target="@target" href="@linkURL">@linkTitle</a>
+                    </div>
+				</li>
+            }
+            else
+            {
+                <li>
+                    <a target="@target" href="@linkURL">@linkTitle</a>
+                </li>
+            }
+        }
+    }
+    </ul>
+    
+}

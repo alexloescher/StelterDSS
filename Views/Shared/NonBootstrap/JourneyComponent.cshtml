@@ -1,0 +1,48 @@
+@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{
+    String compStyle = Model.Page.GetElementValue("JourneyPathsStyle"); // default to button_bottom
+
+    if (compStyle.Contains("Main Image") || compStyle.Contains("Vertical"))
+    {
+        String addClass = compStyle.Contains("Main Image Bottom") ? "stl-above" : "";
+        //no, this is not backwards.  The class is for which way the flyout menus go
+        addClass = compStyle.Contains("Vertical") ? (compStyle.Contains("Right") ? "stl-left" : "stl-right") : addClass;
+    <div class="stl-drop-down @addClass">
+        <p class="stl-heading-text" onclick="">@Model.GetElementValue("PathLabel")</p>
+        <div class="stl-drop-wrap">
+            @Html.Partial("Other/TaxonomyNavigation", Model.GetTaxonomyNavigation("Path"))
+        </div>
+    </div>   
+    }
+    else
+    {
+    <div class="stl-col stl-w-04">
+        <div class="stl-info-slider">
+            @{
+        if (compStyle == "Always Visible")
+        {
+                @_Helpers.RenderImage(Model.Element("PathImage"), Url)
+                <h4>@Model.GetElementValue("PathLabel")</h4>   
+                @Html.Partial("Other/TaxonomyNavigation", Model.GetTaxonomyNavigation("Path"))
+        }
+        else
+        {
+            if (compStyle.Contains("Top Buttons"))
+            {
+                <span class="stl-button stl-info stl-button-top" href="#" onclick="">@Model.GetElementValue("PathLabel")</span>
+            }
+                <div class="stl-slider-wrap"  style="background-image: url('@_Functions.GetImagePath(Model.GetElementValue("PathImage"), Url, Model)');">
+                    @Html.Partial("Other/TaxonomyNavigation", Model.GetTaxonomyNavigation("Path"))
+                </div>
+            if (compStyle.Contains("Bottom Buttons") || compStyle.Contains("style") || compStyle == "")
+            {
+                <span class="stl-button stl-info" href="#" onclick="">@Model.GetElementValue("PathLabel")</span>
+            }
+        }
+            }
+        </div>
+    </div>
+    }
+   
+}

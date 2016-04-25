@@ -1,0 +1,34 @@
+﻿@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{		
+    var page = Model;
+    var siteControl = page.Element("CSiteControl");
+    string title = "";
+    string copytitle = ViewBag.Title;        
+    if (siteControl != null)
+    {
+        string orgName = siteControl.GetElementValue("OrgName");
+        if (!orgName.IsNullOrEmpty())
+        {
+            title = orgName;
+            if (!copytitle.IsNullOrEmpty())
+            {
+                title = copytitle + " | " + title;
+                if (Request.QueryString["fullView"] != null)
+                {
+                    if (Request.QueryString["fullView"] == "true")
+                    {
+                        title += " | Mobile desktop view";
+                    }
+                    else if (Request.QueryString["fullView"] == "false")
+                    {
+                        title += " | Mobile view";
+                    }
+                }
+            }
+        }
+    }
+}
+<!-- Title should be OrgName | Page Title | Main Copy Title -->
+<!-- Example: Drake University | Planned Giving | Bequests and Wills -->
+<title>@title</title>

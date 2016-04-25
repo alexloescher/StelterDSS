@@ -1,0 +1,10 @@
+﻿@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    Layout = null;
+    ICMSLinkElement link = Model.GetLinkItem("CustomLink");
+    if (link != null)
+    {
+        Response.Redirect(_Functions.GetLinkActionNew(link, Url));
+    }
+}

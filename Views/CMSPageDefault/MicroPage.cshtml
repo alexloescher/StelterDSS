@@ -1,0 +1,273 @@
+﻿@model Ingeniux.Runtime.CMSPageRequest
+@{
+    ViewBag.Title = Model.Element("PageTitle").ToNullHelper().Propagate<string>(ele => ele.Content.Value).Return("Planned Giving");
+    Layout = "~/Views/Shared/_MicroMainLayout.cshtml";
+}
+@using Ingeniux.Runtime
+
+@{
+    var siteControl = Model.Element("MicroSiteControl");
+    var siteGrid = Model.Element("PageGrid");
+    if (!siteGrid.Value.IsNullOrEmpty())
+    {
+        if (siteGrid.Value.Equals("Inherit from Site Control"))
+        {
+            if(siteControl != null)
+            {
+                siteGrid = siteControl.Element("SiteGrid");
+            }
+        }
+    }
+
+    var leftColBootstrapClass = "col-md-3 col-md-pull-9";
+    var middleColBootstrapClass = "col-md-9 col-md-push-3";
+    var rightColBootstrapClass = "";
+
+    if (siteGrid != null && !siteGrid.Value.IsNullOrEmpty())
+    {
+        string[] siteGridVal = siteGrid.Value.Split('-');
+        if (siteGridVal[0] != "")
+        {        
+            var left = "";
+            var middle = "";
+            var right = "";
+            if (siteGridVal.Length == 1)
+            {
+                middle = siteGridVal[0];
+            }
+            if (siteGridVal.Length == 2)
+            {
+                left = siteGridVal[0];
+                middle = siteGridVal[1];   
+            }
+            if (siteGridVal.Length == 3)
+            {
+                left = siteGridVal[0];
+                middle = siteGridVal[1];
+                right = siteGridVal[2];
+            }    
+            if(right == ""){
+                //if right column is empty
+                if(left == ""){
+                    //if right and left are empty
+                    middleColBootstrapClass = "col-md-12";
+                    leftColBootstrapClass = "";
+                } else {
+                    if(Int32.Parse(left) > Int32.Parse(middle)){
+                        //if right is empty and left is greater than middle
+                        rightColBootstrapClass = "col-md-" + middle;
+                        middleColBootstrapClass = "col-md-"+ left;
+                        leftColBootstrapClass = "";
+                    } else {
+                        //if right is empty and left is lesser than middle
+                        leftColBootstrapClass = "col-md-" + left + " col-md-pull-" + middle;
+                        middleColBootstrapClass = "col-md-" + middle + " col-md-push-" + left;
+                    }
+                }
+            } else {
+                //right column is not empty
+                leftColBootstrapClass = "col-md-" + left + " col-md-pull-" + middle;
+                middleColBootstrapClass = "col-md-" + middle + " col-md-push-" + left;
+                rightColBootstrapClass = "col-md-" + right;
+            }
+        }
+    }
+    }
+<div class="middle-section">
+    <a id="skip"></a>
+    @* Bread Crumb *@
+    <div class="row">
+        <div class="col-xs-12">
+        @{
+            if (siteControl != null)
+            {
+                Html.RenderPartial("Other/Breadcrumb", siteControl);
+            }
+        }
+        </div>
+    </div>
+
+    @* Main Content and Vertical Navigation *@
+    <div class="row">
+        <div class="@middleColBootstrapClass sub-middle-section">
+            @if (Model.GetElementValue("MainColumnDisplay").EqualsIgnoreCase("") || Model.GetElementValue("MainColumnDisplay").EqualsIgnoreCase("Append"))
+			{              
+                <div class="row">
+                    <div class="col-sm-12">
+                        @{
+                            Html.RenderPartial("Editable/MainContentHTML", new ViewDataDictionary(Model.Element("MainContentHTML")));
+                        }
+                    </div>
+                </div>
+			}
+            @if (Model.GetElementValue("MainColumnDisplay").EqualsIgnoreCase("Replace") || Model.GetElementValue("MainColumnDisplay").EqualsIgnoreCase("Append"))
+            {                
+                Html.RenderPartial("Other/MicroPageMiddleColumn", Model);
+            }            
+            @* ------------------ Copyright / Disclaimer ----------------- *@
+            @if (siteControl != null && siteControl.Element("CopyrightComponent") != null)
+            {
+                <div class="copyright">
+                @{
+                Html.RenderPartial("Other/Disclaimer", siteControl);
+                }
+                </div>
+            }   
+        </div>
+        @{
+            if (leftColBootstrapClass != "")
+            {
+                <div class="@leftColBootstrapClass vertical-navigation hidden-print hidden-sm visible-md visible-lg left-col">
+                    <div class="vertical-nav-sub">
+
+                        <!-- BEGIN: Left Column Components -->
+                        @if (Model.GetElementValue("LeftColumnDisplay").EqualsIgnoreCase("Inherit") || Model.GetElementValue("LeftColumnDisplay").EqualsIgnoreCase("Append"))
+                        {
+                            if (siteControl != null)
+                            {
+                                var scLeftComps = siteControl.Elements().Where(ele => ele.GetAttributeValue("Name") == "LeftItem");
+                                if (scLeftComps.Any())
+                                {
+                                    foreach (var comp in scLeftComps)
+                                    {
+                                        string compName = (comp as CMSPageRequest).RootElementName;
+                                        try
+                                        {
+                                            ViewDataDictionary dict = new ViewDataDictionary { { "ContainerId", comp.GetElementValue("ContainerId") },
+                                                                         { "ContainerClass", comp.GetElementValue("ContainerClass") },
+                                                                         { "ContainerLocalStyle", comp.GetElementValue("ContainerLocalStyle") }
+                                                                       };
+
+                                            if (compName.Equals("NavigationComponent"))
+                                            {
+                                                Html.RenderPartial("Components/NavigationComponent", siteControl, dict);
+                                            }
+                                            else
+                                            {
+                                                Html.RenderPartial("Components/" + compName, comp);
+                                            }
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            // no view for this component or exception
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        @if (Model.GetElementValue("LeftColumnDisplay").EqualsIgnoreCase("Replace") || Model.GetElementValue("LeftColumnDisplay").EqualsIgnoreCase("Append"))
+                        {
+                            var pgLeftComps = Model.Elements().Where(ele => ele.GetAttributeValue("Name") == "LeftItem");
+                            if (pgLeftComps.Any())
+                            {
+                                foreach (var comp in pgLeftComps)
+                                {
+                                    string compName = (comp as CMSPageRequest).RootElementName;
+                                    try
+                                    {
+                                        ViewDataDictionary dict = new ViewDataDictionary { { "ContainerId", comp.GetElementValue("ContainerId") },
+                                                                         { "ContainerClass", comp.GetElementValue("ContainerClass") },
+                                                                         { "ContainerLocalStyle", comp.GetElementValue("ContainerLocalStyle") }
+                                                                       };
+
+                                        if (compName.Equals("NavigationComponent"))
+                                        {
+                                            Html.RenderPartial("Components/NavigationComponent", siteControl, dict);
+                                        }
+                                        else
+                                        {
+                                            //Html.RenderPartial("Components/" + compName, comp);
+                                            Html.RenderPartial("Components/ManualListingComponent", comp);
+                                        }
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        // no view for this component or exception
+                                    }
+                                }
+                            }
+                        }
+                        <!-- END: Left Column Components -->
+                    </div>
+                </div>
+            }
+        }
+        @{
+            if (rightColBootstrapClass != "")
+            {
+                <div class="@rightColBootstrapClass vertical-navigation hidden-print hidden-sm visible-md visible-lg right-col">
+                    <div class="vertical-nav-sub">
+
+                        <!-- BEGIN: Right Column Components -->
+                        @if (Model.GetElementValue("RightColumnDisplay").EqualsIgnoreCase("Inherit") || Model.GetElementValue("RightColumnDisplay").EqualsIgnoreCase("Append"))
+                        {
+                            if (siteControl != null)
+                            {
+                                var scRightComps = siteControl.Elements().Where(ele => ele.GetAttributeValue("Name") == "RightItem");
+                                if (scRightComps.Any())
+                                {
+                                    foreach (var comp in scRightComps)
+                                    {
+                                        string compName = (comp as CMSPageRequest).RootElementName;
+                                        try
+                                        {
+                                            ViewDataDictionary dict = new ViewDataDictionary { { "ContainerId", comp.GetElementValue("ContainerId") },
+                                                                         { "ContainerClass", comp.GetElementValue("ContainerClass") },
+                                                                         { "ContainerLocalStyle", comp.GetElementValue("ContainerLocalStyle") }
+                                                                       };
+
+                                            if (compName.Equals("NavigationComponent"))
+                                            {
+                                                Html.RenderPartial("Components/NavigationComponent", siteControl, dict);
+                                            }
+                                            else
+                                            {
+                                                Html.RenderPartial("Components/" + compName, comp);
+                                            }
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            // no view for this component or exception
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        @if (Model.GetElementValue("RightColumnDisplay").EqualsIgnoreCase("Replace") || Model.GetElementValue("RightColumnDisplay").EqualsIgnoreCase("Append"))
+                        {
+                            var pgRightComps = Model.Elements().Where(ele => ele.GetAttributeValue("Name") == "RightItem");
+                            if (pgRightComps.Any())
+                            {
+                                foreach (var comp in pgRightComps)
+                                {
+                                    string compName = (comp as CMSPageRequest).RootElementName;
+                                    try
+                                    {
+                                        ViewDataDictionary dict = new ViewDataDictionary { { "ContainerId", comp.GetElementValue("ContainerId") },
+                                                                         { "ContainerClass", comp.GetElementValue("ContainerClass") },
+                                                                         { "ContainerLocalStyle", comp.GetElementValue("ContainerLocalStyle") }
+                                                                       };
+
+                                        if (compName.Equals("NavigationComponent"))
+                                        {
+                                            Html.RenderPartial("Components/NavigationComponent", siteControl, dict);
+                                        }
+                                        else
+                                        {
+                                            Html.RenderPartial("Components/" + compName, comp);
+                                        }
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        // no view for this component or exception
+                                    }
+                                }
+                            }
+                        }
+                        <!-- END: Right Column Components -->
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>

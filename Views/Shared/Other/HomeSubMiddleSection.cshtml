@@ -1,0 +1,44 @@
+@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    var siteControl = Model.Element("CSiteControl");
+    <div class="mission-section">
+        @{
+            if (siteControl == null || siteControl.GetElementValue("TitlePlacement") == "" || siteControl.GetElementValue("TitlePlacement") == "Main")
+            {
+                Html.RenderPartial("Editable/ClientMissionTitle", Model.Element("ClientMissionTitle"));
+            }
+        }
+        <div class="row">
+            <div class="col-sm-12">
+                @* ----------- Whats new in main copy ------------------ *@
+                @{
+                    if (Model.Element("IncludeinMainCopy").Value == "true")
+                    {
+@* What's New Pullout *@
+                        Html.RenderPartial("Other/Whatsnew", Model);
+                    }
+                }
+                @{
+                    Html.RenderPartial("Editable/ClientMissionBody", new ViewDataDictionary(Model.Element("ClientMissionBody")));
+                }
+            </div>
+        </div>
+    </div>
+    @Html.Partial("NonBootstrap/JourneyComponentWrapper")
+@* ------------------------ Next Steps ----------------------- *@
+    if (Model.Element("GettingStartedIntro") != null)
+    {
+    <div class="not-sure">
+        @{
+        Html.RenderPartial("Editable/XHTMLField", new ViewDataDictionary(Model.Element("GettingStartedIntro")));
+        }
+    </div>
+    }
+@* ----------- Whats new in getting started ------------------ *@
+    if (Model.Element("IncludeinGettingStarted").Value == "true")
+    {
+@* What's New Pullout *@
+        Html.RenderPartial("Other/Whatsnew", Model);
+    }
+}

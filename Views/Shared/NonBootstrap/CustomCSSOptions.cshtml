@@ -1,0 +1,32 @@
+@model ICMSElement
+@using Ingeniux.Runtime
+
+@{
+    //Modal popup
+    String headerColor = Model.GetElementValue("HeaderBackgroundColor");
+    headerColor = headerColor.Contains("#") ? headerColor : "#" + headerColor;
+    String headerTextColor = Model.GetElementValue("HeaderTextColor");
+    headerTextColor = headerTextColor.Contains("#") ? headerTextColor : "#" + headerTextColor;
+
+    if (Model.GetElementValue("PopupDisplay") == "Header Bar")
+    {
+    <style type="text/css">
+        div.mfp-content h2 {
+            background: none repeat scroll 0 0 @headerColor;
+            color: @headerTextColor;
+            font-size: 120%;
+            font-weight: bold;
+            margin: -20px -20px 20px;
+            padding: 5px 20px;
+        }
+    </style>
+    }
+    if (!String.IsNullOrWhiteSpace(headerColor))
+    {
+    <style type="text/css">
+        #stl-cms div.stl-accordion .stl-toggle {background-color:  @headerColor; color: @headerTextColor;}
+        .stl-accordion {background-color: @headerColor;}
+        .stl-accordion ul a {color: @headerTextColor;}
+    </style>   
+    }
+}

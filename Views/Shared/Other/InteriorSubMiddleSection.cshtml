@@ -1,0 +1,50 @@
+@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    var siteControl = Model.Element("CSiteControl");
+    var copy = Model.Element("NextStepsCopy");
+    <div class="main-copy">
+        @{
+            <!-- need to add class="text-left" to below subtitle, change to pass in class name -->
+            if (siteControl == null || (siteControl.GetElementValue("TitlePlacement") == "" || siteControl.GetElementValue("TitlePlacement") == "Main"))
+            {
+                Html.RenderPartial("Editable/MainCopyTitle", Model.Element("MainCopyTitle"));
+            }
+        }
+        <div class="row stl-main-copy-row">
+            <div class="col-sm-12">
+                @{
+                    Html.RenderPartial("Editable/MainCopySubtitle", Model.Element("MainCopySubtitle"));
+                    if (Model.Element("FreeBrochureCheck1").Value == "true")
+                    {
+                        Html.RenderPartial("Other/eBrochure", Model);
+                    }
+                    Html.RenderPartial("Editable/MainCopyBody", Model.Element("MainCopyBody"));
+                    Html.RenderPartial("Other/eBrochureForm", Model); 
+                }
+            </div>
+        </div>
+    </div>
+    if (!String.IsNullOrWhiteSpace(Model.GetElementValue("CaseStudyTitle")))
+    {
+    <div class="case-study">
+        @* ---------------------- Case Study -------------------- *@
+        @{
+        Html.RenderPartial("Editable/CaseStudyTitle", Model.Element("CaseStudyTitle"));
+        Html.RenderPartial("Editable/CaseStudyBody", Model.Element("CaseStudyBody"));
+        }
+    </div>   
+    }
+    @Html.Partial("Other/VideoWrapper")
+
+@* ---------------------- Calculator -------------------- *@
+    if (Model.Element("GiftIllustratorComponent") != null)
+    { 
+    <div class="row stl-gift-illustrator-row">
+        <div class="col-sm-12">
+            @Html.Partial("Other/GiftIllustrator", Model.Element("GiftIllustratorComponent"))
+        </div>
+    </div>
+    }
+    @Html.Partial("Other/NextStepsWrapper")
+}

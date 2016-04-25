@@ -1,0 +1,26 @@
+﻿@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    <div class="pull-right eBrochure ebro">
+        @{                        
+            var ebroAbsVal = Model.GetElementValue("FreeBrochureAbstract");
+            var ebroBtn1Val = Model.GetElementValue("FreeBrochureButton1");
+            if (ebroBtn1Val == "")
+            {
+                ebroBtn1Val = "View My Free Brochure";
+            }
+            if (!ebroAbsVal.IsNullOrEmpty())
+            {
+                string ebrTeaser = _Functions.StringWithVariableSubstitution(ebroAbsVal, Model);
+            @_Helpers.RenderImage(Model.Element("BrochureIcon"), Url, "stl-ebro-icon")
+                if (Model.GetElementValue("BrochureTitle") != "")
+                {
+            <h4 class="stl-ebro-title">@_Functions.StringWithVariableSubstitution(Model.GetElementValue("BrochureTitle"), Model)</h4>   
+                }
+            <div class="clear"></div>
+            <p>@Html.Raw(ebrTeaser)</p>
+            <a class="stlButton popup-with-form fancybox-form" href="#brochureform">@ebroBtn1Val</a>
+            }
+        }
+    </div>
+}

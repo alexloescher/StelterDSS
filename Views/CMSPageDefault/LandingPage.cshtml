@@ -1,0 +1,13 @@
+@model Ingeniux.Runtime.CMSPageRequest
+@{
+    Layout = "~/Views/Shared/_LandingLayout.cshtml";
+}
+@using Ingeniux.Runtime
+
+@{
+    ICMSElement bodyHTML = Model.Element("PageBodyHTML");
+    if (bodyHTML != null)
+    {
+        @Html.Raw(bodyHTML.Value)
+    }
+}

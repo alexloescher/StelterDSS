@@ -1,0 +1,64 @@
+@using System.Xml.Linq
+@using System.Net.Mail
+@using Ingeniux.Runtime
+@using Ingeniux.Runtime.Models
+@{
+    var testEmail = "test@stelter.com";
+    var fname = Request["first"];
+    var email = Request["email"];
+    var lname = Request["last"];
+    var honeypot = Request["honeypot"];
+
+    string toEmail = !Request["toemail"].IsNullOrEmpty() ? Request["toemail"] : !Request["toEmail"].IsNullOrEmpty() ? Request["toEmail"] : "";
+    string[] recipients = toEmail.Split(';');
+
+    var nextpage = Request["nextpage"];
+    var pageName = !Request["pagename"].IsNullOrEmpty() ? Request["pagename"] : !Request["pageName"].IsNullOrEmpty() ? Request["pageName"] : "";
+    var eBrochureId = !Request["ebrochureid"].IsNullOrEmpty() ? Request["ebrochureid"] : !Request["eBrochureId"].IsNullOrEmpty() ? Request["eBrochureId"] : "";
+    var orgName = !Request["orgname"].IsNullOrEmpty() ? Request["orgname"] : !Request["orgName"].IsNullOrEmpty() ? Request["orgName"] : "";
+
+    if (nextpage != null && !nextpage.IsEmpty() && !nextpage.StartsWith("http"))
+    {
+        if (!Request.Url.ToString().Contains("ingeniuxondemand.com") && nextpage.Contains(@"/"))
+        {
+            nextpage = nextpage.SubstringAfter(@"/");
+        }
+
+        nextpage = "/" + nextpage;
+    }
+
+    Response.Write(RenderPage("sendPageContent.cshtml", fname, lname, email, pageName, eBrochureId, "eBrochure", nextpage));
+    var emailBody = RenderPage("eBroEmailBody.cshtml", fname, lname, email, pageName, nextpage, eBrochureId);
+
+    try {
+        MailMessage mail = new MailMessage();
+        mail.From = new MailAddress("stella@stelter.com");
+        foreach (string recp in recipients) {
+            mail.To.Add(recp.Trim());
+        }
+        if (orgName != null && orgName.Length > 0) {
+            mail.Subject = orgName + ": eBrochure request from " + fname + " " + lname;
+        } else {
+            mail.Subject = "eBrochure request from " + fname + " " + lname;
+        }
+        mail.Body = emailBody.ToHtmlString();
+        mail.IsBodyHtml = true;
+        mail.Bcc.Add("dmp.forms@stelter.com");
+        
+        // Send email only if we're not testing
+        if (String.IsNullOrWhiteSpace(honeypot) && email.ToLower() != testEmail)
+        {
+            FormInfoWrapper wrapper = new FormInfoWrapper();
+            String referringUrl = Request.UrlReferrer != null ? Request.UrlReferrer.AbsoluteUri.Trim() : "Unknown";
+            wrapper.AddFormSubmission(orgName, referringUrl, "EBrochure", pageName, fname, lname, email, nextpage, eBrochureId);
+
+            SmtpClient smtp = new SmtpClient("localhost", 25);
+            smtp.UseDefaultCredentials = false;
+            smtp.Credentials = new System.Net.NetworkCredential("", "");
+            smtp.Send(mail);
+        }
+    }
+    catch (Exception ex ) {
+        //do nothing
+    }
+}

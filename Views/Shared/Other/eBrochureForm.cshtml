@@ -1,0 +1,134 @@
+@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    var tier = Session["tier"];
+    var ebroBtn2Val = Model.Element("FreeBrochureButton1").Value;
+    var siteControl = Model.Element("CSiteControl");
+    var ebroEmail = Model.Element("FreeBrochureCustomEmail").Value;
+    var custUberFlipUrl = "";
+    var nextpage = "";
+    var custeBrochureId = "";
+    var defeBrochureId = "";
+    var eBrochureId = "";
+    if(Model.Element("Page", "CustomBrochure") != null)
+    {
+        custUberFlipUrl = _Functions.GetLinkURL(Model.Element("Page", "CustomBrochure"), Url);
+        custeBrochureId = Model.Element("Page", "CustomBrochure").GetAttributeValue("Link");
+    }
+    ICMSPage ebroComp = new CMSPageRequest();
+    var ebroCompId = "";
+    if(Model.Element("FreeBrochureComponent") != null){
+        ebroComp = (ICMSPage)Model.Factory.GetPage(Request, Model.Element("FreeBrochureComponent").GetAttributeValue("ID"));
+        ebroCompId = Model.Element("FreeBrochureComponent").GetAttributeValue("ID");   
+    }
+    var defUberFlipUrl = "";
+    if (Model.Element("FreeBrochureComponent") != null)
+    {
+        if (ebroComp.Element("Page", "BrochureLink") != null)
+        {
+            defUberFlipUrl = _Functions.GetLinkURL(ebroComp.Element("Page", "BrochureLink"), Url);
+            defeBrochureId = ebroComp.GetAttributeValue("Name");
+        }
+    }
+    var ebroPage = "";
+    var orgName = "";
+    if(siteControl != null)
+    {    
+        if(siteControl.Element("Page","eBrochurePage") != null)
+        {
+            if(ebroCompId != "")
+            {
+                ebroPage = _Functions.GetLinkURL(siteControl.Element("Page", "eBrochurePage"), Url) + "?ebr=" + ebroCompId;
+            }
+        }
+        // Adapt to IGX URL Rewrite Engine
+        if (!siteControl.Page.IsPreview && !Request.Url.Host.Contains("ingeniuxondemand.com"))
+        {
+            ebroPage = "/" + ebroPage;
+        }
+        
+        if (siteControl.Element("OrgName") != null) {
+            orgName = siteControl.Element("OrgName").Value;
+        }
+    }
+    if (ebroBtn2Val == "")
+    {
+        ebroBtn2Val = "View Brochure";
+    }
+    if (ebroEmail == "")
+    {
+        var orgEbroEmail = Session["eBroEmail"];
+        if (orgEbroEmail != null)
+        {
+            ebroEmail = orgEbroEmail.ToString();
+        }
+    }
+    //var ebroType = Model.Element("FreeBrochureType").Value;
+    if (tier == "Silver" /*|| ebroType == "HTML"*/)
+    {
+        if (!custUberFlipUrl.IsNullOrEmpty()) {
+            nextpage = custUberFlipUrl;
+        } else {
+            nextpage = ebroPage;
+        }
+    }
+    if((tier == "Gold" || tier == "Platinum") /*&& ebroType == "Uberflip"*/)
+    {
+        if(custUberFlipUrl == ""){
+            nextpage = defUberFlipUrl;
+            eBrochureId = defeBrochureId;
+        } else {
+            nextpage = custUberFlipUrl;
+            eBrochureId = custeBrochureId;
+        }        
+    }
+
+    if (eBrochureId.IsNullOrEmpty())
+    {
+        eBrochureId = defeBrochureId;
+    }
+
+    // Fall back to HTML version if no URL was specified
+    if (nextpage.IsNullOrEmpty()) {
+        nextpage = ebroPage;
+    }
+<div style="display:none">
+<p>ebrId: @eBrochureId</p>
+<p>default: @defeBrochureId</p>
+<p>custom: @custeBrochureId</p>
+</div>
+    <div class="hide">
+        <form action="../../../Action/eBroSendEmail.cshtml" id="brochureform" target="_blank" name="brocureform" method="POST" class="white-popup-block clearfix" onsubmit="return validateBrochureForm()">
+	        <p style="margin-bottom:30px;">Please provide the following information to view the brochure.</p>
+	        <p>
+		        <label for="first" class="visuallyhidden">First Name</label>
+		        <input id="first" name="first" placeholder="First Name" type="text">
+	        </p>
+            <p>
+		        <label for="last" class="visuallyhidden">Last Name</label>
+		        <input id="last" name="last" placeholder="Last Name" type="text">
+	        </p>
+            <p>
+		        <label for="email" class="visuallyhidden">Email Address</label>
+		        <input id="email" name="email" placeholder="Email Address" type="email">
+	        </p>
+	        <p class="hidden">
+                <label for="honeypot" class="visuallyhidden">Honeypot</label>
+		        <input type="text" name="honeypot" id="honeypot" autocomplete="off">
+	        </p>		
+	        <p>
+		        <button class="stlButton" type="submit"><span>@ebroBtn2Val</span></button>
+	        </p>
+            <label for="nextpage" class="hide">Next Page</label>
+	        <input id="nextpage" name="nextpage" value="@nextpage" type="hidden">
+            <label for="toEmail" class="hide">To Email</label>
+            <input id="toEmail" name="toEmail" value="@ebroEmail" type="hidden">
+            <label for="pageName" class="hide">Page Name</label>
+            <input id="pageName" name="pageName" value="@Model.GetAttributeValue("Name")" type="hidden" />
+            <label for="eBrochureId" class="hide">Page Name</label>
+            <input id="eBrochureId" name="eBrochureId" value="@eBrochureId" type="hidden" />
+            <label for="orgName" class="hide">Org Name</label>
+            <input id="orgName" name="orgName" value="@orgName" type="hidden" />
+        </form>            
+    </div>
+}

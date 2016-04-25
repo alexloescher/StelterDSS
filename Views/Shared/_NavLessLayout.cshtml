@@ -1,0 +1,19 @@
+﻿@model Ingeniux.Runtime.CMSPageRequest
+@{
+    ViewBag.Title = Model.Element("Title").ToNullHelper().Propagate<string>(ele => ele.Content.Value).Return("Planned Giving Home");
+
+    ICMSElement siteControl = Model.Element("CSiteControl");
+    bool isMobile = _Functions.isMobile(Model);
+    bool shouldUseAdaptiveMobile = siteControl != null && siteControl.GetElementValue("EnableAdaptiveMode") == "true";
+    String displayMode = siteControl != null ? siteControl.GetElementValue("DisplayMode") : "Bootstrap";
+    bool useBootstrap = displayMode == "Bootstrap" || (isMobile && shouldUseAdaptiveMobile);
+    bool useCustomTemplates = displayMode == "Custom";
+    Layout = useBootstrap ? "~/Views/Shared/_Layout.cshtml" : "~/Views/Shared/_NonBootstrapLayout.cshtml";
+}
+@using Ingeniux.Runtime
+@using Ingeniux.Runtime.Models
+@{   
+    <div class="not-sure-where-to-being-questionnaire">
+        @RenderBody()
+    </div>    
+}

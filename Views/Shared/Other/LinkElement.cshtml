@@ -1,0 +1,72 @@
+﻿@model Ingeniux.Runtime.ICMSLinkElement
+@using Ingeniux.Runtime
+@{
+    var linkElem = Model;
+    var tier = ViewData["CustTier"];
+    var custSiteControl = ViewData["CustSiteControl"];
+    if (linkElem != null)
+    {
+        string ebrId = linkElem.GetAttributeValue("ebrComp");   // Id to retrieve the fallback HTML version of a brochure
+        string ebrDefaultInteractivLink = linkElem.GetAttributeValue("ebrCompLink");    // Link to the default interactive brochure
+        string ebrCustomLink = linkElem.GetAttributeValue("custBrochure");  // Link to a custom brochure
+        //string ebrTeaser = linkElem.GetAttributeValue("ebrAbstract");
+
+        string ebroPage = "";
+        if (custSiteControl != null && !ebrId.IsNullOrEmpty())
+        {
+            ICMSElement siteControl = custSiteControl as ICMSElement;
+            if (siteControl != null)
+            {
+                ebroPage = _Functions.GetLinkURL(siteControl.Element("Page", "eBrochurePage"), Url) + "?ebr=" + ebrId;
+            }
+        }
+
+        string brochureLink = "";
+        if ((tier == "Gold" || tier == "Platinum") /*&& ebroType == "Uberflip"*/)
+        {
+            if (ebrCustomLink == "")
+            {
+                brochureLink = ebrDefaultInteractivLink;
+            }
+            else
+            {
+                brochureLink = ebrCustomLink;
+            }
+        }
+        // Fall back to HTML version if no URL was specified or if Silver tier
+        if (brochureLink.IsNullOrEmpty())
+        {
+            brochureLink = ebroPage;
+        }
+
+        if (!brochureLink.IsNullOrEmpty())
+        {
+            @*
+            string linkName = linkElem.GetAttributeValue("Title");
+            if (linkName == null || linkName.Length == 0) {
+                linkName = linkElem.Name;
+            }
+            *@
+            string linkName = linkElem.Name;
+            
+            if (!ebrId.IsNullOrEmpty()) {
+                ICMSPage page = (ICMSPage)Model.Factory.GetPage(Request, ebrId);
+                if (page != null) {
+                    linkName = page.GetAttributeValue("Name");
+                }
+            }
+
+            <li><span class="stl-toolkit-ebr-link"><a target="_blank" href="@brochureLink">@linkName</a></span></li>
+        }
+
+        if (linkElem.GetLinkItems().Count() > 0)
+        {
+            <ul>
+                @foreach (ICMSLinkElement sublink in linkElem.GetLinkItems())
+                {
+                    <li>@Html.Partial("Other/LinkElement", sublink)</li>
+                }
+            </ul>
+        }
+    }
+}

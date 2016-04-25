@@ -1,0 +1,176 @@
+@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    ICMSElement siteControl = Model.Element("CSiteControl");
+    String displayType = siteControl != null ? siteControl.GetElementValue("DisplayMode") : "";
+    IEnumerable<ICMSElement> jPaths = Model.Elements("JourneyPathsComponent");
+    if (jPaths.Any())
+    {
+    <div class="stl-journey-paths journey-paths adventure clearfix">
+        @* ---------------------- Journey Section -------------------- *@
+        @{
+        if (Model.Element("JourneyTitle") != null)
+        {
+            <h3 class="hidden-xs visible-md visible-lg" @_Helpers.RenderICEAttribute(Model.Element("JourneyTitle"))>
+                @Model.Element("JourneyTitle").Value
+            </h3>
+            if ((displayType == "Bootstrap" && !Model.RootElementName.Contains("Custom")) || _Functions.isMobile(Model))
+            {
+            <h4 class="visible-xs hidden-lg" @_Helpers.RenderICEAttribute(Model.Element("JourneyTitle"))>
+                <a class="collapsed" data-toggle="collapse" href="#journey-paths-details">@Model.Element("JourneyTitle").Value <span class="glyphicon glyphicon-plus-sign pull-right"></span></a>
+            </h4>
+            }
+        }
+        Html.RenderPartial("Editable/JourneyAbstract", new ViewDataDictionary(Model.Element("JourneyAbstract")));
+        String journeyStyle = Model.GetElementValue("JourneyPathsStyle").Trim();
+        String mainImage = Model.GetElementValue("JourneyMainImage");
+        if (journeyStyle == "custom")
+        {
+            <div id="journey-paths-details" class="navbar-collapse collapse">
+                @{  var customSub = "";
+                    foreach (ICMSElement item in jPaths)
+                    {
+                        var tempImg = Html.Partial("Editable/PathImage", item.Element("PathImage")).ToString();
+                        var tempJlist = Html.Partial("Other/TaxonomyNavigation", item.GetTaxonomyNavigation("Path")).ToString();
+                        var tempCustomSub = Model.Element("CustomStyleTemplateSub").Value.Replace("#jimg", tempImg);
+                        tempCustomSub = tempCustomSub.Replace("#jtitle", item.GetElementValue("PathLabel"));
+                        tempCustomSub = tempCustomSub.Replace("#jlist", tempJlist.ToString());
+                        customSub += tempCustomSub;
+
+                        Html.RenderPartial("Other/MiddleResults", item.GetTaxonomyNavigation("Path"),
+                               new ViewDataDictionary { { "PathPrompter", item.GetElementValue("PathPrompter") } });
+                    }                            
+                    @Html.Raw(_Functions.StringWithVariableSubstitution(Model.Element("CustomStyleTemplateMain").Value.Replace("#customsub", customSub), Model))
+                }
+            </div>
+        }
+        else if (journeyStyle.Contains("style") && displayType != "Adaptive" || (_Functions.isMobile(Model.Page) && displayType == "Adaptive"))
+        {
+            //old Bootstrap styles
+            <div id="journey-paths-details" class="navbar-collapse collapse">
+                @{                    
+                    <div class="row hidden-print">
+                        @{
+            string lastElementID = jPaths.LastOrDefault().GetAttributeValue("ID");
+            foreach (ICMSElement item in jPaths)
+            {
+                String viewName = journeyStyle == "style2" ? "JourneyComponent_Style2" : "JourneyComponent";
+                Html.RenderPartial("Components/" + viewName, item,
+                         new ViewDataDictionary { { "last", lastElementID.Equals(item.GetAttributeValue("ID")) } });
+                Html.RenderPartial("Other/MiddleResults", item.GetTaxonomyNavigation("Path"),
+                             new ViewDataDictionary { { "PathPrompter", item.GetElementValue("PathPrompter") } });
+            }
+                        }
+                    </div>
+                }
+            </div>
+        }
+        else if (journeyStyle.Contains("Accordion"))
+        {
+            //main or partial accordions
+            <div class="stl-colwrap" style="@(journeyStyle.Contains("Full") ? "background-image: url('" + _Functions.GetImagePath(mainImage, Url, Model) + "');background-repeat: no-repeat;" : "")">
+                @{
+            if (journeyStyle.Contains("Right"))
+            {
+                    <div class="stl-col stl-w-08">
+                        @_Helpers.RenderImage(Model.Element("JourneyMainImage"), Url)
+                    </div>   
+            }
+                    <div class="stl-col @(!journeyStyle.Contains("Full") ? "stl-w-04" : "stl-w-12")">
+                        <div class="stl-accordion">
+                            @{ 
+            foreach (ICMSElement item in jPaths)
+            {
+                                @Html.Partial("NonBootstrap/JourneyComponentAccordion", item)
+                Html.RenderPartial("Other/MiddleResults", item.GetTaxonomyNavigation("Path"),
+                               new ViewDataDictionary { { "PathPrompter", item.GetElementValue("PathPrompter") } });
+            }
+                            }
+                        </div>
+                    </div>
+            if (journeyStyle.Contains("Left"))
+            {
+                    <div class="stl-col stl-w-08">
+                        @_Helpers.RenderImage(Model.Element("JourneyMainImage"), Url)
+                    </div>  
+            }
+                }
+            </div>
+            <div class="spacer"></div>
+        }
+        else if (journeyStyle.Contains("Main Image"))
+        {
+            //main image with top or bottom buttons
+            if (journeyStyle.Contains("Bottom"))
+            {
+            @_Helpers.RenderImage(Model.Element("JourneyMainImage"), Url)
+            }   
+            <div class="stl-colwrap">
+                @{
+            foreach (ICMSElement item in jPaths)
+            {
+                    <div class="stl-col stl-w-04">
+                        @Html.Partial("NonBootstrap/JourneyComponent", item)
+                        @Html.Partial("Other/MiddleResults", item.GetTaxonomyNavigation("Path"),
+                                    new ViewDataDictionary { { "PathPrompter", item.GetElementValue("PathPrompter") } })
+                    </div>
+            }
+                }
+            </div>
+            if (journeyStyle.Contains("Top"))
+            {
+            @_Helpers.RenderImage(Model.Element("JourneyMainImage"), Url)
+            }
+        }
+        else if (journeyStyle.Contains("Vertical"))
+        {
+            <div class="stl-colwrap">
+                @{
+            if (journeyStyle.Contains("Right"))
+            {
+                    <div class="stl-col stl-w-08 stl-vertical-image">
+                        <p>
+                            @_Helpers.RenderImage(Model.Element("JourneyMainImage"), Url)
+                        </p>
+                    </div>
+            }
+                    <div class="stl-col stl-w-04 stl-vertical-buttons">
+                        @{
+            foreach (ICMSElement item in jPaths)
+            {
+                Html.RenderPartial("NonBootstrap/JourneyComponent", item);
+                Html.RenderPartial("Other/MiddleResults", item.GetTaxonomyNavigation("Path"),
+                                new ViewDataDictionary { { "PathPrompter", item.GetElementValue("PathPrompter") } });
+            }
+                        }
+                    </div>
+            if (journeyStyle.Contains("Left"))
+            {
+                    <div class="stl-col stl-w-08 stl-vertical-image">
+                        <p>
+                            @_Helpers.RenderImage(Model.Element("JourneyMainImage"), Url)
+                        </p>
+                    </div>
+            }
+                }
+            </div>
+        }
+        else
+        {
+            //it's either top buttons or bottom buttons
+            <div class="journey-main stl-colwrap" style="@(mainImage != "" ? "background-image: url('" + _Functions.GetImagePath(mainImage, Url, Model) + "');background-repeat: no-repeat;" : "")">
+                @{
+            foreach (ICMSElement item in jPaths)
+            {
+                    @Html.Partial("NonBootstrap/JourneyComponent", item)
+                Html.RenderPartial("Other/MiddleResults", item.GetTaxonomyNavigation("Path"),
+                            new ViewDataDictionary { { "PathPrompter", item.GetElementValue("PathPrompter") } });
+            }
+                }
+            </div>
+        }
+        }
+        <div class="clear"></div>
+    </div>
+    }
+}

@@ -1,0 +1,51 @@
+﻿@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{
+    <ol class="breadcrumb">
+    @foreach (ICMSElement lnk in Model.Elements("Page", "ClientBreadcrumblinks"))
+    {
+        var linkTitle = lnk.GetAttributeValue("Link");
+        var linkURL = _Functions.GetLinkURL(lnk, Url);
+        var target = lnk.GetAttributeValue("Target");
+        <li>
+            <a target="@target" href="@linkURL">@linkTitle</a>
+        </li>
+    }
+    @try {
+        if (Model != null && Model.Page != null) {
+            ICMSPage pg = Model.Page;
+            var links = pg.GetNavigationItems("Breadcrumb").Where(ele => ele.Schema != "Folder" && ele.Schema != "VerticalNavigationGroup");
+            var current = links.LastOrDefault();
+            links = links.Reverse();
+
+            if (links.Count() == 0) { // we must be on the home page
+                var seoElem = pg.GetElementValue("NavigationOverride");
+                if (!seoElem.IsNullOrEmpty()) {
+                    <li class="current">@seoElem</li>
+                } else {
+                    <li class="current">@pg.GetAttributeValue("Name")</li>
+                }
+            }
+            foreach (var link in links)
+            {
+                string linkName = link.Name;
+                if (link.Schema == "HomePage" && !link.GetAttributeValue("NavigationTitle").IsNullOrEmpty())
+                {
+                    linkName = link.GetAttributeValue("NavigationTitle");
+                }
+                if (link.URL != current.URL)
+                {
+		            <li class="current">@linkName</li>
+                }
+                else
+                {
+		            <li><a href="@_Functions.GetLinkActionNew(link, Url)">@linkName</a></li>
+                }
+            }
+        }
+    }
+    catch (Exception e)
+    {
+    }
+    </ol>
+}

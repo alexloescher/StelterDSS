@@ -1,0 +1,25 @@
+﻿@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{	
+	var xhtmlfield = Model;
+    if (xhtmlfield != null)
+	{
+        if (Model != null && Model.EditMode) {
+            <span @_Helpers.RenderICEAttribute(xhtmlfield)>
+                @Html.Raw(xhtmlfield.Value)
+            </span>
+        } else {
+            string sectionCopy = xhtmlfield.Value;
+            if (xhtmlfield.Value.IndexOf("@[whats_new]") != -1)
+            {
+                ViewDataDictionary dict = new ViewDataDictionary { { "IncludeDivider", false } };
+                string whatsNewHTML = Html.Partial("Components/WhatsnewComponent", Model.Page, dict).ToString();
+                sectionCopy = sectionCopy.Replace("@[whats_new]", whatsNewHTML);
+            }
+
+            string outCopy = _Functions.StringWithVariableSubstitution(sectionCopy, Model.Page);
+
+            @Html.Raw(outCopy)
+        }
+    }
+}

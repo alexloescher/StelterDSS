@@ -1,0 +1,39 @@
+﻿@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{
+    var freeForm = Model;
+    ICMSElement content = freeForm.Element("FreeFormContent");
+    if (content != null)
+    {
+
+        string elemId = freeForm.GetElementValue("ContainerId");
+        string elemClass = freeForm.GetElementValue("ContainerClass");
+        string elemLocalStyle = freeForm.GetElementValue("ContainerLocalStyle");
+
+        <div id="@elemId" class="@elemClass" style="@elemLocalStyle">
+        @{
+            string pageType = Model.Page.Content.Name.ToString();
+            if (!pageType.IsNullOrEmpty() && pageType.Equals("MicrositePage"))
+            {
+                string outCopy = _Functions.MicroSiteStringWithVariableSubstitution(content.Value, Model.Page);
+                @Html.Raw(outCopy)
+            }
+            else
+            {
+                string outCopy = _Functions.StringWithVariableSubstitution(content.Value, Model.Page);
+                //Added by Ashley, by request of Brian 
+                if (outCopy.Contains("@[VerticalNavigation]"))
+                {
+                    ICMSElement siteControl = Model.Page.Element("CSiteControl");
+                    if (siteControl != null)
+                    {
+                        String navCopy = Html.Partial("PageLayout/VerticalNavigation", siteControl).ToString();
+                        outCopy = outCopy.Replace("@[VerticalNavigation]", navCopy);
+                    }
+                }
+                @Html.Raw(outCopy)
+            }
+        }
+        </div>
+    }
+}

@@ -1,0 +1,26 @@
+﻿@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{	
+    if(Model != null)
+    {
+        string bannerTyp = Convert.ToString(ViewData["BannerType"]);
+        <div class="row banner-row"> 
+            <div class="column-md-12 hidden-print hidden-sm visible-md visible-lg">
+            @{
+                if(bannerTyp == "single")
+                {
+                    Html.RenderPartial("Other/SingleBanner", Model);
+                }
+                else if (bannerTyp == "rotator")
+                {
+                    Html.RenderPartial("Other/RotatorBanner", Model);
+                }
+                else if (bannerTyp == "freeform")
+                {
+                    Html.RenderPartial("Other/FreeFormBanner", Model);
+                }
+            }
+            </div>           
+        </div>
+    }
+}

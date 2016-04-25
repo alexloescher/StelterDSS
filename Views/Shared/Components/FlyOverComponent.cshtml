@@ -1,0 +1,34 @@
+﻿@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    if(Model.Element("CSiteControl") != null){
+        ICMSNavigationElement flyOvrs = Model.Element("CSiteControl").GetNavigation("Flyovers");
+        if(flyOvrs != null){
+            foreach (ICMSLinkElement link in flyOvrs.GetLinkItems())
+            {
+                var moreTx = "Read more";
+                ICMSPage page = (ICMSPage)link.Factory.GetPage(Request, link.ID);
+                <span class="popup-flyover" id="@link.Name.ToLower().Replace(" ",string.Empty)-flyover">
+                    @{
+                        if(page.XPathSelectElement("/*/LearnAssets/Title") != null)
+                        {
+                            moreTx = "More about " + page.XPathSelectElement("/*/LearnAssets/Title").Value;
+	                        <span class="toolH3">@page.XPathSelectElement("/*/LearnAssets/Title").Value</span>
+                        }
+                    }
+                    @{
+                        if(page.XPathSelectElement("/*/LearnAssets/Abstract") != null)   
+                        {
+                            @Html.Raw(_Functions.StringWithVariableSubstitution(page.XPathSelectElement("/*/LearnAssets/Abstract").Value, Model))       
+                        }
+                    }                    
+	                @{                
+                        if(page.Element("Page","LearnAssetLink") != null){
+                        <a href="@_Functions.GetLinkURL(page.Element("Page", "LearnAssetLink"), Url)" class="stlButton iconR">@moreTx</a>
+                        }
+                    }
+                </span>
+            }
+        }
+    }
+}

@@ -1,0 +1,9 @@
+﻿@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{
+    var disclaimer = Model.Element("CopyrightComponent");
+    if (disclaimer != null)
+    {
+        @Html.Raw(disclaimer.GetElementValue("CopyrightText"))
+    }
+}

@@ -1,0 +1,26 @@
+﻿@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{	
+    var XHTMLEditor1 = Model;
+    if (XHTMLEditor1 != null)
+    {
+        if (Model != null && Model.EditMode == true)
+        {
+            <div @_Helpers.RenderICEAttribute(XHTMLEditor1)>
+                @Html.Raw(XHTMLEditor1.Value)
+            </div>
+        }
+        else
+        {
+            string bodyCopy = XHTMLEditor1.Value;
+            if (XHTMLEditor1.Value.IndexOf("@[whats_new_listing]") != -1)
+            {
+                string whatsNewListingHTML =
+                   Html.Partial("Other/WhatsnewListing", Model.Page).ToString();
+                bodyCopy = bodyCopy.Replace("@[whats_new_listing]", whatsNewListingHTML);
+            }
+            string outCopy = _Functions.StringWithVariableSubstitution(bodyCopy, Model.Page);
+            @Html.Raw(outCopy)
+        }
+    }
+}

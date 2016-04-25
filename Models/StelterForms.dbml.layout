@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ordesignerObjectsDiagram dslVersion="1.0.0.0" absoluteBounds="0, 0, 11, 8.5" name="StelterForms">
+  <DataContextMoniker Name="/StelterFormsDataContext" />
+  <nestedChildShapes>
+    <classShape Id="7ea7595e-499a-4976-89a7-74fb1c1a5ca9" absoluteBounds="4.125, 0.875, 2, 2.9247054036458331">
+      <DataClassMoniker Name="/StelterFormsDataContext/FormSubmission" />
+      <nestedChildShapes>
+        <elementListCompartment Id="df5e593c-858e-42f9-97d5-6c083c1a8630" absoluteBounds="4.14, 1.335, 1.9700000000000002, 2.364705403645833" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+  </nestedChildShapes>
+</ordesignerObjectsDiagram>

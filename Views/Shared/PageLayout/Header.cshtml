@@ -1,0 +1,11 @@
+@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@using System.Xml.Linq;
+
+<nav class="navbar navbar-default visible-md visible-lg hidden-print nav-big stl-nav-lg" role="navigation">
+    <div class="bs-header hidden-print">
+    @{
+        Html.RenderPartial("Editable/XHTMLField", new ViewDataDictionary(Model.Element("Header")));
+    }
+    </div>
+</nav>

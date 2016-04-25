@@ -1,0 +1,32 @@
+@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    
+    var page = Model.Page;
+    <div class="row next-steps nextSteps stl-clearfix stl-next-steps-sidebar">
+        <!-- Next Steps with Optional eBrochure Pull Out -->
+        @{
+            bool showBrochure = page.GetElementValue("FreeBrochureCheck2") == "true";
+            bool showPepc = page.GetElementValue("DisplayPEPCPromowithinNextSteps") == "true";
+            <h4 class="next-steps-head hidden-xs visible-md visible-lg">@page.GetElementValue("NextStepsTitle")</h4>
+            <div class="stl-next-steps-copy">
+                @Html.Partial("Other/NextSteps", page)
+            </div>
+            if (showBrochure || showPepc)
+            {
+            <div class="stl-next-steps-brochure">
+                @{
+                if (showBrochure)
+                {
+                    Html.RenderPartial("Other/eBrochure", page);
+                }
+                if (showPepc)
+                {
+                    Html.RenderPartial("Other/PEPCPromo", page);
+                }
+                }
+            </div>
+            }
+        }
+    </div>
+}

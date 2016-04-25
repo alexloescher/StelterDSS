@@ -1,0 +1,78 @@
+@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{    
+    var siteControl = Model.Element("CSiteControl");
+    if(siteControl.Element("Page", "PEPCRedirectPage") != null)
+    {
+        var pepcBtnVal = "Download Our FREE Personal Estate Planning Kit";
+        if(!siteControl.Element("PEPCFormSubmitText").Value.IsNullOrEmpty())
+        {
+            pepcBtnVal = siteControl.Element("PEPCFormSubmitText").Value;
+        }
+        var pepcEmail = siteControl.Element("PEPCNotificationEmail").Value;
+        var nextpage = "";
+        var orgName = "";
+        if (siteControl.Element("OrgName") != null)
+        {
+            orgName = siteControl.Element("OrgName").Value;
+        }
+        if (siteControl.Element("Page", "PEPCRedirectPage") != null)
+        {
+            nextpage += _Functions.GetLinkURL(siteControl.Element("Page", "PEPCRedirectPage"), Url);
+
+            // Adapt to IGX URL Rewrite Engine
+            if (!siteControl.Page.IsPreview && !Request.Url.Host.Contains("ingeniuxondemand.com"))
+            {
+                nextpage = "/" + nextpage;
+            }
+        }
+        if (pepcEmail == "")
+        {
+            var orgEbroEmail = Session["eBroEmail"];
+            if (orgEbroEmail != null)
+            {
+                pepcEmail = orgEbroEmail.ToString();
+            }
+        }
+        var pepcTeaser = "Please provide the following information to view the materials for planning your estate.";
+        if (!siteControl.Element("PEPCFormTeaserText").Value.IsNullOrEmpty())
+        {
+            pepcTeaser = siteControl.Element("PEPCFormTeaserText").Value;
+        }
+        if(!nextpage.IsNullOrEmpty())
+        {
+            <div class="hide">
+                <form action="../../../Action/PEPCSendEmail.cshtml" id="PEPCForm" target="_parent" name="PEPCForm" method="POST" class="white-popup-block clearfix" onsubmit="return validatePEPCForm()">
+	                <p style="margin-bottom:30px;">@Html.Raw(pepcTeaser)</p>
+	                <p>
+		                <label for="pepcFirst" class="visuallyhidden">First Name</label>
+		                <input id="pepcFirst" name="first" placeholder="First Name" type="text">
+	                </p>
+                    <p>
+		                <label for="pepcLast" class="visuallyhidden">Last Name</label>
+		                <input id="pepcLast" name="last" placeholder="Last Name" type="text">
+	                </p>
+                    <p>
+		                <label for="pepcEmail" class="visuallyhidden">Email Address</label>
+		                <input id="pepcEmail" name="email" placeholder="Email Address" type="email">
+	                </p>
+	                <p class="hidden">
+                        <label for="pepcHoneypot" class="visuallyhidden">Honeypot</label>
+		                <input type="text" name="honeypot" id="pepcHoneypot" autocomplete="off">
+	                </p>		
+	                <p>
+		                <button class="stlButton" type="submit"><span>@pepcBtnVal</span></button>
+	                </p>
+                    <label for="pepcNextpage" class="hide">Next Page</label>
+	                <input id="pepcNextpage" name="nextpage" value="@nextpage" type="hidden">
+                    <label for="pepcToEmail" class="hide">To Email</label>
+                    <input id="pepcToEmail" name="toEmail" value="@pepcEmail" type="hidden">
+                    <label for="pepcPageName" class="hide">Page Name</label>
+                    <input id="pepcPageName" name="pageName" value="@Model.GetAttributeValue("Name")" type="hidden" />
+                    <label for="orgName" class="hide">Org Name</label>
+                    <input id="orgName" name="orgName" value="@orgName" type="hidden" />
+                </form>            
+            </div>
+        }
+    }
+}

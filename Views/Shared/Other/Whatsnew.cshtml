@@ -1,0 +1,131 @@
+@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    IEnumerable<ICMSElement> wnEnum = Model.Elements("Page", "WhatsNewItem");
+    IEnumerable<ICMSNavigatingCategory> wntxEnum = Model.GetTaxonomyNavigation("WhatsNewSyndications").AllCategories;
+    //to find the number of pages in the whats new navigation element
+    var wntxEnumCnt = 0;
+    foreach (ICMSNavigatingCategory cat in wntxEnum)
+    {
+        foreach (ICMSLinkElement page in cat.Pages)
+        {
+            wntxEnumCnt++;
+        }
+    }
+
+    // Retrieve categories from site control (modularize this code later)
+    List<string> siteGiftTypeExclusions = new List<string>();
+    var siteControl = Model.Element("CSiteControl");
+    if (siteControl != null)
+    {
+        ICMSTaxonomyNavigationElement gtExclusions = (ICMSTaxonomyNavigationElement)siteControl.Element("TaxonomyNavigation", "GiftTypeExclusions");
+        if (gtExclusions != null)
+        {
+            siteGiftTypeExclusions = gtExclusions.AllCategories.Select(gt => gt.ID).ToList();
+        }
+    }
+
+    //set the default number of items as 3
+    var numberOfItems = 3;
+    if (Model.Element("WhatsNewItems").Value != "")
+    {
+        numberOfItems = Int32.Parse(Model.Element("WhatsNewItems").Value);
+    }
+
+    /*
+     *  wntxEnum = FEATURE Articles
+     *  wnEnum = Client Articles
+     */
+
+    //if either of the list is not null && either of the list has some items && number of items is greater than 0
+    if ((wnEnum != null || wntxEnum != null) && (wnEnum.Count() > 0 || wntxEnumCnt > 0) && numberOfItems > 0)
+    {
+        var title = Model.Element("WhatsNewTitle").Value;
+    <div class="pull-right multipurpose hotnews hidden-print">
+        <div id="stl-whats-new">
+            <h3 class="stl-whats-new-title">
+                @_Helpers.RenderImage(Model.Element("WhatsNewIcon"), Url, "stl-whats-new-image")
+                <span>@title</span>
+            </h3>
+            <div class="clear"></div>
+            <ul>
+                @{
+        int tempCount = 1;
+        List<ICMSElement> wnArticles = new List<ICMSElement>();
+
+        // Collect the client articles
+        foreach (ICMSElement lnk in Model.Elements("Page", "WhatsNewItem"))
+        {
+            wnArticles.Add(lnk);
+        }
+
+        // Collect the syndicated articles subject to gift exclusions
+        foreach (ICMSNavigatingCategory cat in wntxEnum)
+        {
+            var nPages = cat.PagesCount;
+            if (nPages > 0)
+            {
+                IEnumerable<ICMSLinkElement> featuredPages = cat.Pages.Where(item => item.GetAttributeValue("CategoryIds").Split('|').ToList().Intersect(siteGiftTypeExclusions).Any() == false);
+                foreach (ICMSLinkElement fpage in featuredPages)
+                {
+                    wnArticles.Add(fpage as ICMSElement);
+                }
+            }
+        }
+
+        // Filter and sort the articles using ExpirationDate and PublicationDate attributes, if present
+        IEnumerable<ICMSElement> wnSortedArticles = wnArticles.Where(
+            art => (art.GetAttributeValue("ExpirationDate").IsNullOrEmpty() || art.GetAttributeValue("ExpirationDate").ToLocalDate() >= DateTime.Today)
+                    &&
+                    (art.GetAttributeValue("PublicationDate").IsNullOrEmpty() || art.GetAttributeValue("PublicationDate").ToLocalDate() <= DateTime.Today)
+            ).OrderByDescending(pg => pg.GetAttributeValue("PublicationDate"));
+
+        // First render the sticky items
+        foreach (ICMSElement wnItem in wnSortedArticles.Where(elem => elem.GetAttributeValue("CategoryIds").Split('|').ToList().Contains("1") == true))
+        {
+            if (tempCount > numberOfItems)
+            {
+                break;
+            }
+            var linkName = !String.IsNullOrWhiteSpace(wnItem.GetAttributeValue("NavigationTitle")) ? wnItem.GetAttributeValue("NavigationTitle") :
+                !String.IsNullOrWhiteSpace(wnItem.GetAttributeValue("Link")) ? wnItem.GetAttributeValue("Link") : wnItem.GetAttributeValue("Name");
+            var linkURL = _Functions.GetLinkURL(wnItem, Url);
+            var linkTarget = wnItem.GetAttributeValue("Target");
+
+            <li><a target="@linkTarget" href="@linkURL" class="sticky">@linkName</a></li>
+
+            tempCount++;
+        }
+
+        // Now render the rest
+        foreach (ICMSElement wnItem in wnSortedArticles.Where(elem => elem.GetAttributeValue("CategoryIds").Split('|').ToList().Contains("1") == false))
+        {
+            if (tempCount > numberOfItems)
+            {
+                break;
+            }
+            var linkName = !String.IsNullOrWhiteSpace(wnItem.GetAttributeValue("NavigationTitle")) ? wnItem.GetAttributeValue("NavigationTitle") :
+                !String.IsNullOrWhiteSpace(wnItem.GetAttributeValue("Link")) ? wnItem.GetAttributeValue("Link") : wnItem.GetAttributeValue("Name");
+            var linkURL = _Functions.GetLinkURL(wnItem, Url);
+            var linkTarget = wnItem.GetAttributeValue("Target");
+
+            <li><a target="@linkTarget" href="@linkURL">@linkName</a></li>
+
+            tempCount++;
+        }
+                }
+            </ul>
+            @{
+                ICMSElement listPage = Model.Element("Page", "WhatsNewListingPage");
+                if (listPage != null)
+                {
+                    var linkName = listPage.GetAttributeValue("Link");
+                    var linkURL = _Functions.GetLinkURL(listPage, Url);
+            
+                    <a class="stl-wn-view-more" href="@linkURL">@linkName</a>
+                }
+            }
+        </div>
+    </div>
+    }
+}

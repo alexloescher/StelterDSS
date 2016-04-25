@@ -1,0 +1,9 @@
+﻿@model Ingeniux.Runtime.ICMSElement
+@using Ingeniux.Runtime
+@{	
+	var textField1 = Model;
+    if (textField1 != null && !textField1.Value.IsNullOrEmpty())
+	{
+		<h1 class="stl-page-title" @_Helpers.RenderICEAttribute(textField1)>@_Functions.StringWithVariableSubstitution(Model.Value, Model.Page)</h1>
+	}
+}

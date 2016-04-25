@@ -1,0 +1,30 @@
+﻿@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{	
+    var title = Model.Element("Title");
+    var siteControl = Model.Element("CSiteControl");
+    var shareWidgetPresent = false;
+    if (siteControl != null && siteControl.Element("Share") != null)
+    {
+        shareWidgetPresent = true;
+    }
+    if (!_Functions.GetPageHeader(Model).IsNullOrEmpty())
+    {
+        if (!shareWidgetPresent)
+        {            
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        @{
+            <p class="stl-page-header" @_Helpers.RenderICEAttribute(title)>@_Functions.GetPageHeader(Model)</p>
+        }
+    </div>
+        }
+        else
+        {
+    <div class="col-lg-9 col-md-9 col-sm-8 col-xs-12">
+        @{
+            <p class="stl-page-header" @_Helpers.RenderICEAttribute(title)>@_Functions.GetPageHeader(Model)</p>
+        }
+    </div>
+        }
+    }
+}

@@ -1,0 +1,62 @@
+@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    var page = Model;
+    var siteControl = page.Element("CSiteControl");
+    string orgName = "";
+    if (siteControl != null)
+    {
+        orgName = siteControl.GetElementValue("OrgName");
+    }
+    string descTitle = page.GetElementValue("DescriptiveTitle");
+    descTitle = String.IsNullOrEmpty(descTitle) ? Convert.ToString(ViewData["title"]) : _Functions.StringWithVariableSubstitution(descTitle, page);
+    string desc = _Functions.StringWithVariableSubstitution(page.GetElementValue("MetaDescription"), page);    
+    string keywords = page.GetElementValue("Keywords");
+    bool noIndex = String.IsNullOrEmpty(page.GetElementValue("NoIndex")) ? false : true;
+    bool noFollow = String.IsNullOrEmpty(page.GetElementValue("NoFollow")) ? false : true;
+    string type = page.GetElementValue("Type");
+	type = String.IsNullOrEmpty(type) ? "website" : type;
+    string sharingTitle = page.GetElementValue("SharingTitle");
+    sharingTitle = String.IsNullOrEmpty(sharingTitle) ? descTitle : _Functions.StringWithVariableSubstitution(sharingTitle, page);
+    string sharingDesc = _Functions.StringWithVariableSubstitution(page.GetElementValue("SharingDescription"), page);
+    sharingDesc = String.IsNullOrEmpty(sharingDesc) ? desc : sharingDesc;
+    string sharingImg = page.GetElementValue("SharingImage");
+    sharingImg = String.IsNullOrEmpty(sharingImg) ? sharingImg : _Functions.GetImagePath(sharingImg, Url, page);
+    string twitterAuthor = page.GetElementValue("TwitterAuthor").Replace("@","");
+    twitterAuthor = String.IsNullOrEmpty(twitterAuthor) ? twitterAuthor : "@" + twitterAuthor;
+    <meta name="description" content="@Html.Raw(desc)">
+	if (noIndex && noFollow)
+	{
+		<meta name="robots" content="noindex, nofollow">
+	}
+	else if (noIndex && !noFollow)
+	{
+		<meta name="robots" content="noindex">
+	}
+	else if (!noIndex && noFollow)
+	{
+		<meta name="robots" content="nofollow">
+	}
+	else
+	{
+		//nothing
+	}
+	<meta name="keywords" content="@keywords">
+    <!-- Twitter Card data -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:site" content=""> <!--Site's twitter handle - not supported right now-->
+    <meta name="twitter:title" content="@Html.Raw(sharingTitle)">
+    <meta name="twitter:description" content="@Html.Raw(sharingDesc)">
+    <meta name="twitter:creator" content="@twitterAuthor"> <!--author-->
+    <meta name="twitter:image" content="@sharingImg">
+    <meta name="twitter:url" content="@page.URL" />
+
+    <!-- Open Graph data -->
+    <meta property="og:title" content="@Html.Raw(sharingTitle)" />
+    <meta property="og:site_name" content="@orgName" /> <!-- Org Name -->
+    <meta property="og:url" content="@page.URL" />
+    <meta property="og:description" content="@Html.Raw(sharingDesc)" />
+    <meta property="og:image" content="@sharingImg" />
+    <meta property="og:type" content="@type" /> <!--website/article-->
+    <meta property="og:locale" content="en_US" />
+}

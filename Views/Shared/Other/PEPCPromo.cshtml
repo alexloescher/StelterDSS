@@ -1,0 +1,20 @@
+﻿@model Ingeniux.Runtime.CMSPageRequest
+@using Ingeniux.Runtime
+@{
+    <div class="pull-right stl-pepc-promo">
+        @{                        
+            var pepcTsr = Model.Element("PEPCPromoTeaser").Value;
+            var pepcBtnVal = Model.Element("PEPCPromoButtonText").Value;
+            if (pepcBtnVal == "")
+            {
+                pepcBtnVal = "View My Free Brochure";
+            }
+            if (!pepcTsr.IsNullOrEmpty())
+            {
+                pepcTsr = _Functions.StringWithVariableSubstitution(pepcTsr, Model);
+                <p>@Html.Raw(pepcTsr)</p>
+                <a class="stlButton popup-with-form fancybox-form" href="#PEPCForm">@pepcBtnVal</a>
+            }
+        }        
+    </div>
+}

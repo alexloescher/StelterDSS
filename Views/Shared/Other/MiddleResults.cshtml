@@ -1,0 +1,119 @@
+﻿@model Ingeniux.Runtime.ICMSTaxonomyNavigationElement
+@using Ingeniux.Runtime
+@{
+    string subText = Convert.ToString(ViewData["PathPrompter"]);
+
+    var taxNavElement = Model;
+    if (taxNavElement != null)
+    {
+        // Retrieve categories from site control (modularize this code later)
+        List<string> siteGiftTypeExclusions = new List<string>();
+        var siteControl = Model.Page.Element("CSiteControl");
+        if (siteControl != null)
+        {
+            ICMSTaxonomyNavigationElement gtExclusions = (ICMSTaxonomyNavigationElement)siteControl.Element("TaxonomyNavigation", "GiftTypeExclusions");
+            if (gtExclusions != null)
+            {
+                siteGiftTypeExclusions = gtExclusions.AllCategories.Select(gt => gt.ID).ToList();
+            }
+        }
+
+        IEnumerable<ICMSNavigatingCategory> navCats = taxNavElement.NavigatingCategories;
+        navCats = navCats.OrderBy(cat => cat.Description);
+        foreach (ICMSNavigatingCategory cat in navCats)
+        {
+            //get the category pages
+            IEnumerable<ICMSLinkElement> featuredPages = cat.Pages;
+
+            //order by subcategories - numbered 01 - 10.  
+            List<ICMSLinkElement> orderedPages = new List<ICMSLinkElement>();
+            foreach (ICMSNavigatingCategory orderingCategory in cat.Children)
+            {
+                orderedPages.AddRange(orderingCategory.Pages);
+            }
+            //once all the ordered pages are in, add the original pages in if they don't have an order explicitly defined
+            foreach (ICMSLinkElement link in featuredPages)
+            {
+                if (!orderedPages.Any(item => item.ID == link.ID))
+                {
+                    orderedPages.Add(link);
+                }
+            }
+
+            // Filter for gift type exclusions
+            orderedPages = orderedPages.Where(item => item.GetAttributeValue("CategoryIds").Split('|').ToList().Intersect(siteGiftTypeExclusions).Any() == false).ToList();
+
+            //var nPages = cat.PagesCount;
+            var nPages = orderedPages.Count();
+            string overlayTitle = cat.Name;
+            string overlaySubtext = "";
+            string externalID = cat.ExternalID;
+            if (!subText.IsNullOrEmpty())
+            {
+                overlaySubtext = subText;
+            }
+            if (nPages > 1)
+            {
+                bool adaptive = siteControl.GetElementValue("DisplayMode") != "Bootstrap" || (Model.Page as CMSPageRequest).RootElementName.Contains("Custom");
+
+                //only do adaptive for non-mobile sites
+                if (adaptive && !_Functions.isMobile(Model.Page))
+                {
+    <div id="@cat.ID.Replace("CategoryNodes/", "")" class="stl-white-popup mfp-hide">
+        <h2>@cat.Name</h2>
+        @if (!overlaySubtext.IsNullOrEmpty())
+        {
+            <p class="journey">@overlaySubtext</p>
+        }
+        <ul class="journey">
+            @foreach (ICMSLinkElement page in orderedPages)
+            {
+                if (page.GetAttributeValue("NavigationTitle").IsNullOrEmpty())
+                {
+                <li><a href="@_Functions.GetLinkActionNew(page, Url)" onclick="s.linkTrackVars='events,eVar41'; s.linkTrackEvents='event11'; s.events='event11'; s.eVar41='@cat.Name|@page.Name'; s.tl(this,'o','Site Tool');">@page.Name</a></li>
+                }
+                else
+                {
+                <li><a href="@_Functions.GetLinkActionNew(page, Url)" onclick="s.linkTrackVars='events,eVar41'; s.linkTrackEvents='event11'; s.events='event11'; s.eVar41='@cat.Name|@page.GetAttributeValue("NavigationTitle")'; s.tl(this,'o','Site Tool');">@page.GetAttributeValue("NavigationTitle")</a></li>
+                }
+            }
+        </ul>
+    </div>   
+                }
+
+                else
+                {   
+    <div class="middle-results modal fade bs-modal-sm" id="@cat.ID.Replace("CategoryNodes/", "")" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">@cat.Name</h4>
+                    @if (!overlaySubtext.IsNullOrEmpty())
+                    {
+                        <p class="stl_JourneySubtext">@overlaySubtext</p>
+                    }
+                </div>
+                <div class="modal-body">
+                    <ul>
+                        @foreach (ICMSLinkElement page in orderedPages)
+                        {
+                            if (page.GetAttributeValue("NavigationTitle").IsNullOrEmpty())
+                            {
+                            <li><a href="@_Functions.GetLinkActionNew(page, Url)" onclick="s.linkTrackVars='events,eVar41'; s.linkTrackEvents='event11'; s.events='event11'; s.eVar41='@cat.Name|@page.Name'; s.tl(this,'o','Site Tool');">@page.Name</a></li>
+                            }
+                            else
+                            {
+                            <li><a href="@_Functions.GetLinkActionNew(page, Url)" onclick="s.linkTrackVars='events,eVar41'; s.linkTrackEvents='event11'; s.events='event11'; s.eVar41='@cat.Name|@page.GetAttributeValue("NavigationTitle")'; s.tl(this,'o','Site Tool');">@page.GetAttributeValue("NavigationTitle")</a></li>
+                            }
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+                }
+            }
+        }
+    }
+}
