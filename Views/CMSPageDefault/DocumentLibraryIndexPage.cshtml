@@ -17,7 +17,7 @@
         pageFactory = new Ingeniux.Preview.DocumentPreviewPageFactory(contentStore, currentUser, System.Configuration.ConfigurationManager.AppSettings["PageFilesLocation"].ToString(), false);
         pageFactory.CacheSiteControls = false;
     }
-    else
+    else //Writing a Comment to test.
     {
         pageFactory = newCMSPageFactory(System.Configuration.ConfigurationManager.AppSettings["PageFilesLocation"].ToString(), false);
         PageFactory.CacheSiteControls = true;
